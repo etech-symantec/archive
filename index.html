@@ -5,21 +5,16 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://etech-symantec.github.io/style.css" />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap" rel="stylesheet">
     <meta charset="UTF-8">
-    <title>텍스트 필터링 + 태그 + 정규식 도우미</title>
+    <title>ProxySG Archive 편집기</title>
     <style>
-          /* 본문 스타일 */
-      .section { background: white; margin: 20px 0; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
-      .section-header { background: #1e3a5f; color: white; padding: 6px 12px; border-radius: 8px 8px 0 0; font-weight: bold; }
-      table { width: 100%; border-collapse: collapse; }
-      th, td { border: 1px solid #ccc; padding: 6px 10px; text-align: center; font-size: 13px; }
-      th { background: #f0f2f5; font-weight: bold; }
-      tr.down-row { color: #999; background: #f9fafb; }
-        body { font-family: 'Do Hyeon', sans-serif; margin: 20px; }
+        /* 본문 스타일 */
+          .section { background: white; margin: 20px 0; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+          .section-header { background: #1e3a5f; color: white; padding: 6px 12px; border-radius: 8px 8px 0 0; font-weight: bold; }
+          table { width: 100%; border-collapse: collapse; }
+          th, td { border: 1px solid #ccc; padding: 6px 10px; text-align: center; font-size: 13px; }
+          th { background: #f0f2f5; font-weight: bold; }
+          tr.down-row { color: #999; background: #f9fafb; }
 
         .container {
             display: flex;
@@ -31,6 +26,9 @@
             flex: 1;
             display: flex;
             flex-direction: column;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
         }
 
         .box-title {
@@ -68,14 +66,15 @@
             margin: 2px;
             font-size: 13px;
             cursor: pointer;
+            background-color: #2563eb;
+            color: white;
+            border-radius: 8px;
+            border: none;
         }
 
-        .section { background: white; margin: 20px 0; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
-        .section-header { background: #1e3a5f; color: white; padding: 6px 12px; border-radius: 8px 8px 0 0; font-weight: bold; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { border: 1px solid #ccc; padding: 6px 10px; text-align: center; font-size: 13px; }
-        th { background: #f0f2f5; font-weight: bold; }
-        tr.down-row { color: #999; background: #f9fafb; }
+        .regex-btn:hover {
+            background-color: #1d4ed8;
+        }
 
         .input-area {
             display: flex;
@@ -83,7 +82,12 @@
             align-items: center;
             padding: 20px;
             max-width: 95%;
+            background: #fff;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
         }
+
         textarea {
             width: 100%;
             min-height: 140px;
@@ -97,6 +101,7 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.05);
             transition: all 0.2s ease;
         }
+
         textarea:focus {
             outline: none;
             background: #fff;
@@ -104,11 +109,38 @@
             box-shadow: 0 4px 16px rgba(37,99,235,0.15);
         }
 
-        .notice {
-            display: flex; justify-content: center; align-items: center; margin: 150px auto;
+        .file-drop-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+            border: 2px dashed #1e3a5f;
+            border-radius: 12px;
+            background-color: #f0f7ff;
+            cursor: pointer;
+            font-size: 16px;
+            color: #1e3a5f;
+            transition: all 0.3s ease;
         }
+
+        .file-drop-container:hover {
+            background-color: #e3f2fd;
+        }
+
+        .file-drop-container p {
+            margin: 0;
+        }
+
+        .notice {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 150px auto;
+        }
+
         .notice-box {
-            display: flex; align-items: center;
+            display: flex;
+            align-items: center;
             background: linear-gradient(135deg, #e9eef8 0%, #f5f7fb 100%);
             border: 1.5px solid #b0c4de;
             border-radius: 20px;
@@ -116,22 +148,47 @@
             max-width: 680px;
             box-shadow: 0 2px 6px rgba(0,0,0,0.08);
         }
-        .notice-icon { font-size: 30px; margin-right: 12px; color: #1e3a5f; }
-        .notice-text { font-size: 14px; color: #2b2b2b; line-height: 1.6; }
-        .notice-text strong { color: #1e3a5f; }
+
+        .notice-icon {
+            font-size: 30px;
+            margin-right: 12px;
+            color: #1e3a5f;
+        }
+
+        .notice-text {
+            font-size: 14px;
+            color: #2b2b2b;
+            line-height: 1.6;
+        }
+
+        .notice-text strong {
+            color: #1e3a5f;
+        }
+
+        .info {
+            font-size: 12px;
+            color: #777;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
 <!-- 공통 헤더 + 제목 + 버전 -->
 <script>
-  window.pageTitle = "ISG Heartbeat 분석";
-  window.pageVersion = "ver.2025.11.20.01";
+  window.pageTitle = "ProxySG Archive 편집기";
+  window.pageVersion = "ver.2025.12.04.01";
 </script> 
 <script src="https://etech-symantec.github.io/header.js"></script>
-<h2>텍스트 필터링 + 태그 + 정규식 도우미</h2>
+
+
+
+<!-- 드래그 앤 드롭 영역 -->
+<div id="dropArea" class="file-drop-container">
+    <p>여기에 텍스트 파일을 드래그하여 업로드</p>
+</div><br>
 
 <!-- 파일 업로드 -->
-<input type="file" id="fileInput"><br><br>
+<input type="file" id="fileInput" style="display:none;"><br><br>
 
 <!-- 키워드 입력 -->
 <input type="text" id="keywordInput" placeholder="키워드를 입력 후 Enter 또는 추가">
@@ -202,7 +259,35 @@ window.onload = function() {
     renderKeywordTags();
 };
 
-// 파일 읽기
+// 드래그 앤 드롭 업로드
+document.getElementById("dropArea").addEventListener("dragover", function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    this.style.backgroundColor = "#e3f2fd";
+});
+
+document.getElementById("dropArea").addEventListener("dragleave", function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    this.style.backgroundColor = "#f0f7ff";
+});
+
+document.getElementById("dropArea").addEventListener("drop", function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    this.style.backgroundColor = "#f0f7ff";
+    const file = e.dataTransfer.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            fileContent = e.target.result;
+            filterText();
+        };
+        reader.readAsText(file, "UTF-8");
+    }
+});
+
+// 파일 입력
 document.getElementById("fileInput").addEventListener("change", function () {
     const file = this.files[0];
     const reader = new FileReader();
@@ -309,6 +394,7 @@ function copyResult() {
         .then(() => alert("남은 줄이 복사되었습니다!"));
 }
 </script>
+
 
 </body>
 </html>
