@@ -47,6 +47,15 @@
             border-radius: 8px;
             padding: 20px;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            max-width: calc(100% - 350px);  /* 좌측 사이드바 너비 250px을 제외한 값으로 제한 */
+            overflow-x: auto;  /* 가로 스크롤 방지 */
+        }
+        
+        /* 반응형 처리: 화면 크기가 작은 경우 우측 사이드바를 100%로 설정 */
+        @media (max-width: 1024px) {
+            .right-content {
+                max-width: 100%;
+            }
         }
 
         .box-title {
