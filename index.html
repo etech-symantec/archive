@@ -66,6 +66,7 @@
             border-radius: 8px 8px 0 0;
         }
 
+        /* "남은 줄" 박스에 드래그 앤 드롭 스타일 추가 */
         .output {
             white-space: pre-wrap;
             border: 1px solid #ccc;
@@ -75,7 +76,21 @@
             background: #fafafa;
             font-family: monospace;
             overflow-wrap: break-word;
+            cursor: pointer;  /* 드래그 가능하게 커서 변경 */
         }
+        
+        #output:hover {
+            background-color: #f0f7ff;  /* 마우스 오버 시 색상 변경 */
+        }
+        
+        /* "남은 줄" 안내문구 스타일 */
+        #dragText {
+            text-align: center;
+            color: #888;
+            font-size: 16px;
+            font-style: italic;
+        }
+
 
         .tag {
             display: inline-block;
@@ -212,10 +227,6 @@
 <div class="container">
     <!-- 좌측 사이드바 -->
     <div class="left-sidebar">
-        <!-- 파일 업로드 박스 -->
-        <div id="dropArea" class="file-drop-container">
-            <p>여기에 텍스트 파일을 드래그하여 업로드</p>
-        </div><br>
         <!-- 파일 업로드 -->
         <input type="file" id="fileInput" style="display:none;">
         <!-- 키워드 입력칸 -->
@@ -256,13 +267,15 @@
 
     <!-- 우측 내용 -->
     <div class="right-content">
+        <!-- 남은 줄 박스에 초기 안내문구 추가 -->
         <div class="box">
             <div class="box-title">📌 남은 줄
                 <button onclick="copyResult()">남은 줄 복사</button>
             </div>
-            <div id="output" class="output"></div>
+            <div id="output" class="output">
+                <p id="dragText">여기에 텍스트 파일을 드래그하여 업로드하세요.</p>
+            </div>
         </div>
-
         <div class="box">
             <div class="box-title">🗑 제거된 줄</div>
             <div id="removed" class="output"></div>
@@ -304,33 +317,35 @@ window.onload = function() {
     renderKeywordTags();
 };
 
-// 드래그 앤 드롭 업로드
-document.getElementById("dropArea").addEventListener("dragover", function(e) {
+// "남은 줄" 박스에 드래그 앤 드롭 기능 추가
+document.getElementById("output").addEventListener("dragover", function(e) {
     e.preventDefault();
     e.stopPropagation();
-    this.style.backgroundColor = "#e3f2fd";
+    this.style.backgroundColor = "#e3f2fd";  // 드래그 중 색상 변경
 });
 
-document.getElementById("dropArea").addEventListener("dragleave", function(e) {
+document.getElementById("output").addEventListener("dragleave", function(e) {
     e.preventDefault();
     e.stopPropagation();
-    this.style.backgroundColor = "#f0f7ff";
+    this.style.backgroundColor = "#fafafa";  // 원래 색상으로 복귀
 });
 
-document.getElementById("dropArea").addEventListener("drop", function(e) {
+document.getElementById("output").addEventListener("drop", function(e) {
     e.preventDefault();
     e.stopPropagation();
-    this.style.backgroundColor = "#f0f7ff";
+    this.style.backgroundColor = "#fafafa";  // 드롭 후 색상 복귀
     const file = e.dataTransfer.files[0];
     if (file) {
         const reader = new FileReader();
         reader.onload = function(e) {
             fileContent = e.target.result;
-            filterText();
+            document.getElementById("dragText").style.display = "none";  // 안내문구 숨기기
+            filterText();  // 파일 읽은 후 필터링 적용
         };
         reader.readAsText(file, "UTF-8");
     }
 });
+
 
 // 파일 입력
 document.getElementById("fileInput").addEventListener("change", function () {
