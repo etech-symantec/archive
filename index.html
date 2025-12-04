@@ -18,31 +18,43 @@
 
         .container {
             display: flex;
-            flex-direction: column;
             gap: 20px;
             margin-top: 20px;
             max-width: 90%;
             margin: 0 auto;
+            flex: 1;
         }
 
-        .box {
+        .left-sidebar {
             display: flex;
             flex-direction: column;
-            background: white;
+            gap: 4px;
+            width: 250px;
+            background: #ffffff;
             border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        .right-content {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            flex: 1;
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 20px;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
         }
 
         .box-title {
             font-weight: bold;
-            margin-bottom: 8px;
             background: #1e3a5f;
             color: white;
             padding: 6px 12px;
             border-radius: 8px 8px 0 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
         }
 
         .output {
@@ -59,8 +71,8 @@
         .tag {
             display: inline-block;
             color: white;
-            padding: 6px 12px;
-            margin: 5px;
+            padding: 2px 8px;
+            margin: 4px;
             border-radius: 18px;
             cursor: pointer;
             font-size: 14px;
@@ -68,9 +80,9 @@
         }
 
         .regex-btn {
-            padding: 4px 8px;
-            margin: 2px;
-            font-size: 13px;
+            padding: 2px 6px;
+            margin: 1px;
+            font-size: 12px;
             cursor: pointer;
             background-color: #2563eb;
             color: white;
@@ -86,7 +98,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 20px;
+            padding: 10px;
             max-width: 95%;
             background: #fff;
             border-radius: 8px;
@@ -119,12 +131,12 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 30px;
+            padding: 14px;
             border: 2px dashed #1e3a5f;
             border-radius: 12px;
             background-color: #f0f7ff;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 14px;
             color: #1e3a5f;
             transition: all 0.3s ease;
         }
@@ -137,55 +149,14 @@
             margin: 0;
         }
 
-        .notice {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin: 150px auto;
-        }
-
-        .notice-box {
-            display: flex;
-            align-items: center;
-            background: linear-gradient(135deg, #e9eef8 0%, #f5f7fb 100%);
-            border: 1.5px solid #b0c4de;
-            border-radius: 20px;
-            padding: 15px 20px;
-            max-width: 680px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-        }
-
-        .notice-icon {
-            font-size: 30px;
-            margin-right: 12px;
-            color: #1e3a5f;
-        }
-
-        .notice-text {
-            font-size: 14px;
-            color: #2b2b2b;
-            line-height: 1.6;
-        }
-
-        .notice-text strong {
-            color: #1e3a5f;
-        }
-
-        .info {
-            font-size: 12px;
-            color: #777;
-            margin-top: 10px;
-        }
-
-        /* 키워드 입력 박스 스타일 */
         #keywordInput {
-            width: 80%;
+            width: 90%;
             padding: 10px;
             border-radius: 8px;
             border: 1px solid #ccc;
             font-size: 14px;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-            margin-bottom: 10px;
+            margin-bottom: 2px;
         }
 
         #keywordInput:focus {
@@ -227,56 +198,66 @@
 
 
 
-<!-- 드래그 앤 드롭 영역 -->
-<div id="dropArea" class="file-drop-container">
-    <p>여기에 텍스트 파일을 드래그하여 업로드</p>
-</div><br>
 
-<!-- 파일 업로드 -->
-<input type="file" id="fileInput" style="display:none;"><br><br>
 
-<!-- 키워드 입력 -->
-<input type="text" id="keywordInput" placeholder="키워드를 입력 후 Enter 또는 추가">
-<button onclick="addKeyword()">추가</button>
-
-<!-- 정규식 도우미 버튼 -->
-<div style="margin-top:10px;">
-    <strong>정규식 도우미:</strong><br>
-    <button class="regex-btn" onclick="insertRegex('^')">시작(^)</button>
-    <button class="regex-btn" onclick="insertRegex('$')">끝($)</button>
-    <button class="regex-btn" onclick="insertRegex('\\d')">숫자(\\d)</button>
-    <button class="regex-btn" onclick="insertRegex('.')">임의문자(.)</button>
-    <button class="regex-btn" onclick="insertRegex('[A-Za-z]')">영문자</button>
-    <button class="regex-btn" onclick="insertRegex('\\s')">공백(\\s)</button>
-    <button class="regex-btn" onclick="insertRegex('*')">0회 이상(*)</button>
-    <button class="regex-btn" onclick="insertRegex('+')">1회 이상(+)</button>
-    <button class="regex-btn" onclick="insertRegex('?')">옵션(?)</button>
-    <button class="regex-btn" onclick="insertRegex('|')">OR(|)</button>
-</div>
-
-<!-- 키워드 태그 -->
-<div id="keywordList" style="margin-top:10px;"></div>
-
-<br>
-
-<!-- 옵션 -->
-<label><input type="checkbox" id="ignoreCase"> 대소문자 무시</label><br>
-<label><input type="checkbox" id="useRegex"> 정규식 사용</label><br><br>
-
-<button onclick="filterText()">필터 적용</button>
-
-<!-- 좌우 비교 UI -->
 <div class="container">
-    <div class="box">
-        <div class="box-title">📌 남은 줄
-            <button onclick="copyResult()">남은 줄 복사</button>
+    <!-- 좌측 사이드바 -->
+    <div class="left-sidebar">
+        <!-- 파일 업로드 박스 -->
+        <div id="dropArea" class="file-drop-container">
+            <p>여기에 텍스트 파일을 드래그하여 업로드</p>
+        </div><br>
+        <!-- 파일 업로드 -->
+        <input type="file" id="fileInput" style="display:none;">
+        <!-- 키워드 입력칸 -->
+        <div class="input-area">
+            <input type="text" id="keywordInput" placeholder="키워드를 입력 후 Enter 또는 추가">
         </div>
-        <div id="output" class="output"></div>
+        <!-- 옵션 -->
+        <div class="options-container">
+            <label><input type="checkbox" id="ignoreCase"> 대소문자 무시</label><br>
+            <label><input type="checkbox" id="useRegex"> 정규식 사용</label><br><br>
+        </div>
+        <button onclick="addKeyword()">추가</button>
+
+        <!-- 정규식 도우미 버튼 -->
+        <div style="margin-top:10px;">
+            <strong>정규식 도우미:</strong><br>
+            <button class="regex-btn" onclick="insertRegex('^')">시작(^)</button>
+            <button class="regex-btn" onclick="insertRegex('$')">끝($)</button>
+            <button class="regex-btn" onclick="insertRegex('\\d')">숫자(\\d)</button>
+            <button class="regex-btn" onclick="insertRegex('.')">임의문자(.)</button>
+            <button class="regex-btn" onclick="insertRegex('[A-Za-z]')">영문자</button>
+            <button class="regex-btn" onclick="insertRegex('\\s')">공백(\\s)</button>
+            <button class="regex-btn" onclick="insertRegex('*')">0회 이상(*)</button>
+            <button class="regex-btn" onclick="insertRegex('+')">1회 이상(+)</button>
+            <button class="regex-btn" onclick="insertRegex('?')">옵션(?)</button>
+            <button class="regex-btn" onclick="insertRegex('|')">OR(|)</button>
+        </div>
+
+        <!-- 키워드 태그 -->
+        <div id="keywordList" style="margin-top:10px;"></div>
+
+        <br>
+
+        
+
+        <button onclick="filterText()">필터 적용</button>
     </div>
 
-    <div class="box">
-        <div class="box-title">🗑 제거된 줄</div>
-        <div id="removed" class="output"></div>
+    <!-- 우측 내용 -->
+    <div class="right-content">
+        <div class="box">
+            <div class="box-title">📌 남은 줄
+                <button onclick="copyResult()">남은 줄 복사</button>
+            </div>
+            <div id="output" class="output"></div>
+        </div>
+
+        <div class="box">
+            <div class="box-title">🗑 제거된 줄</div>
+            <div id="removed" class="output"></div>
+        </div>
     </div>
 </div>
 
@@ -284,22 +265,11 @@
 let fileContent = "";
 let keywords = [];
 
-// GitHub에서 키워드를 가져오기
-async function fetchKeywordsFromGitHub() {
-    const response = await fetch('https://raw.githubusercontent.com/etech-symantec/archive/main/keywords.txt');
-    if (response.ok) {
-        const text = await response.text();
-        return text.split('\n').map(line => line.trim()).filter(line => line);
-    }
-    return [];
-}
-
 // 키워드 로딩
-window.onload = async function() {
-    const fetchedKeywords = await fetchKeywordsFromGitHub();
-    if (fetchedKeywords.length) {
-        keywords = fetchedKeywords.map(k => ({ text: k, color: randomColor() }));
-    }
+window.onload = function() {
+    defaultKeywords.forEach(k => {
+        keywords.push({ text: k, color: randomColor() });
+    });
     renderKeywordTags();
     filterText();
 };
@@ -315,7 +285,7 @@ function randomColor() {
 }
 
 // 기본 키워드 그룹 (요청하신: line, google)
-const defaultKeywords = ["line", "google"];
+const defaultKeywords = ["test", "google"];
 
 // 웹 로드 시 기본 키워드 추가
 window.onload = function() {
@@ -442,8 +412,9 @@ function filterText() {
                     new RegExp(k, ignoreCase ? "i" : "").test(line)
                 );
             } catch (e) {
-                alert("정규식 오류: " + e.message);
-                return;
+                // 오류 발생 시 사용자에게 명확한 메시지 출력
+                alert("정규식 오류: 유효하지 않은 정규식입니다. 다시 확인해 주세요.");
+                return;  // 오류 발생 시 더 이상 진행되지 않도록 처리
             }
         } else {
             matchFound = searchKeywords.some(k => processedLine.includes(k));
