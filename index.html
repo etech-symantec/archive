@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>텍스트 필터링 확장 버전</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+
+        .container {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .box {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .box-title {
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .output {
+            white-space: pre-wrap;
+            border: 1px solid #ccc;
+            padding: 10px;
+            height: 330px;
+            overflow-y: scroll;
+            background: #fafafa;
+            font-family: Consolas, monospace;
+        }
+
+        .tag {
+            display: inline-block;
+            color: white;
+            padding: 6px 12px;
+            margin: 5px;
+            border-radius: 18px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .regex-btn {
+            padding: 4px 8px;
+            margin: 2px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .info {
+            font-size: 12px;
+            color: #777;
+            margin-top: 10px;
+        }
+
+        .error {
+            color: red;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+<h2>텍스트 필터링 + 태그 + 정규식 도우미</h2>
+
+<!-- 파일 업로드 -->
+<input type="file" id="fileInput"><br><br>
+
+<!-- 키워드 입력 -->
+<input type="text" id="keywordInput" placeholder="키워드를 입력 후 Enter 또는 추가">
+<button onclick="addKeyword()">추가</button>
+
+<!-- 정규식 도우미 버튼 -->
+<div style="margin-top:10px;">
+    <strong>정규식 도우미:</strong><br>
+    <button class="regex-btn" onclick="insertRegex('^')">시작(^)</button>
+    <button class="regex-btn" onclick="insertRegex('$')">끝($)</button>
+    <button class="regex-btn" onclick="insertRegex('\\d')">숫자(\\d)</button>
+    <button class="regex-btn" onclick="insertRegex('.')">임의문자(.)</button>
+    <button class="regex-btn" onclick="insertRegex('[A-Za-z]')">영문자</button>
+    <button class="regex-btn" onclick="insertRegex('\\s')">공백(\\s)</button>
+    <button class="regex-btn" onclick="insertRegex('*')">0회 이상(*)</button>
+    <button class="regex-btn" onclick="insertRegex('+')">1회 이상(+)</button>
+    <button class="regex-btn" onclick="insertRegex('?')">옵션(?)</button>
+    <button class="regex-btn" onclick="insertRegex('|')">OR(|)</button>
+</div>
+
+<!-- 키워드 태그 -->
+<div id="keywordList" style="margin-top:10px;"></div>
+
+<br>
+
+<!-- 옵션 -->
+<label><input type="checkbox" id="ignoreCase"> 대소문자 무시</label><br>
+<label><input type="checkbox" id="useRegex"> 정규식 사용</label><br><br>
+
+<button onclick="filterText()">필터 적용</button>
+
+<!-- 좌우 비교 UI -->
+<div class="container">
+    <div class="box">
+        <div class="box-title">📌 남은 줄</div>
+        <div id="output" class="output"></div>
+        <button onclick="copyResult()">남은 줄 복사</button>
+    </div>
+
+    <div class="box">
+        <div class="box-title">🗑 제거된 줄</div>
+        <div id="removed" class="output"></div>
+    </div>
+</div>
+
+<!-- 정규식 도움말 -->
+<div class="info">정규식 예시: <b>^apple.*</b>은 "apple"로 시작하는 모든 라인을 찾습니다.</div>
+<div class="error" id="regexError"></div>
+
+<script>
+let fileContent = "";
+let keywords = [];
+
+// 🎨 랜덤 색상 생성
+function randomColor() {
+    const colors = [
+        "#ff7f7f", "#ffb27f", "#ffe77f",
+        "#a0ff7f", "#7fffd4", "#7fbaff",
+        "#c27fff", "#ff7fe5"
+    ];
+    return colors[Math.floor(Math.random() * colors.length)];
+}
+
+// 기본 키워드 그룹 (요청하신: line, google)
+const defaultKeywords = ["line", "google"];
+
+// 웹 로드 시 기본 키워드 추가
+window.onload = function() {
+    defaultKeywords.forEach(k => {
+        keywords.push({ text: k, color: randomColor() });
+    });
+    renderKeywordTags();
+};
+
+// 파일 읽기
+document.getElementById("fileInput").addEventListener("change", function () {
+    const file = this.files[0];
+    const reader = new FileReader();
+
+    reader.onload = function (e) {
+        fileContent = e.target.result;
+        filterText();
+    };
+
+    reader.readAsText(file, "UTF-8");
+});
+
+// 엔터로 키워드 추가
+document.getElementById("keywordInput").addEventListener("keyup", function(e){
+    if (e.key === "Enter") addKeyword();
+});
+
+// 정규식 도우미 → 입력창에 삽입
+function insertRegex(text) {
+    const input = document.getElementById("keywordInput");
+    input.value += text;
+    input.focus();
+}
+
+// 키워드 추가
+function addKeyword() {
+    const input = document.getElementById("keywordInput");
+    const value = input.value.trim();
+    if (!value) return;
+
+    keywords.push({ text: value, color: randomColor() });
+    input.value = "";
+
+    renderKeywordTags();
+    filterText();
+}
+
+// 키워드 태그 UI
+function renderKeywordTags() {
+    const container = document.getElementById("keywordList");
+    container.innerHTML = "";
+
+    keywords.forEach((kw, i) => {
+        const tag = document.createElement("span");
+        tag.className = "tag";
+        tag.style.background = kw.color;
+        tag.textContent = kw.text + " ×";
+        tag.onclick = () => {
+            keywords.splice(i, 1);
+            renderKeywordTags();
+            filterText();
+        };
+        container.appendChild(tag);
+    });
+}
+
+// 필터링 (항상 OR 방식)
+function filterText() {
+    if (!fileContent) return;
+
+    const ignoreCase = document.getElementById("ignoreCase").checked;
+    const useRegex = document.getElementById("useRegex").checked;
+
+    const lines = fileContent.split(/\r?\n/);
+
+    let kept = [];
+    let removed = [];
+
+    // 키워드 준비
+    const searchKeywords = keywords.map(k => ignoreCase ? k.text.toLowerCase() : k.text);
+
+    lines.forEach(line => {
+        const processedLine = ignoreCase ? line.toLowerCase() : line;
+
+        let matchFound = false;
+
+        if (useRegex) {
+            try {
+                matchFound = searchKeywords.some(k =>
+                    new RegExp(k, ignoreCase ? "i" : "").test(line)
+                );
+            } catch (e) {
+                document.getElementById("regexError").textContent = "정규식 오류: " + e.message;
+                return;
+            }
+        } else {
+            matchFound = searchKeywords.some(k => processedLine.includes(k));
+        }
+
+        // OR 고정 → 하나라도 맞으면 제거
+        if (matchFound) removed.push(line);
+        else kept.push(line);
+    });
+
+    // 출력
+    document.getElementById("output").textContent = kept.join("\n");
+    document.getElementById("removed").textContent = removed.join("\n");
+
+    // 오류 메시지 초기화
+    document.getElementById("regexError").textContent = "";
+}
+
+// 복사 기능
+function copyResult() {
+    const text = document.getElementById("output").innerText;
+    navigator.clipboard.writeText(text)
+        .then(() => alert("남은 줄이 복사되었습니다!"));
+}
+</script>
+
+</body>
+</html>
