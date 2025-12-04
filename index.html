@@ -1,10 +1,14 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
+    <link rel="stylesheet" href="https://etech-symantec.github.io/style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap" rel="stylesheet">
     <meta charset="UTF-8">
-    <title>텍스트 필터링 확장 버전</title>
+    <title>텍스트 필터링 + 태그 + 정규식 도우미</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
+        body { font-family: 'Do Hyeon', sans-serif; margin: 20px; }
 
         .container {
             display: flex;
@@ -21,6 +25,10 @@
         .box-title {
             font-weight: bold;
             margin-bottom: 8px;
+            background: #1e3a5f;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 8px 8px 0 0;
         }
 
         .output {
@@ -30,7 +38,7 @@
             height: 330px;
             overflow-y: scroll;
             background: #fafafa;
-            font-family: Consolas, monospace;
+            font-family: monospace;
         }
 
         .tag {
@@ -51,16 +59,55 @@
             cursor: pointer;
         }
 
-        .info {
-            font-size: 12px;
-            color: #777;
-            margin-top: 10px;
+        .section { background: white; margin: 20px 0; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+        .section-header { background: #1e3a5f; color: white; padding: 6px 12px; border-radius: 8px 8px 0 0; font-weight: bold; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ccc; padding: 6px 10px; text-align: center; font-size: 13px; }
+        th { background: #f0f2f5; font-weight: bold; }
+        tr.down-row { color: #999; background: #f9fafb; }
+
+        .input-area {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            max-width: 95%;
+        }
+        textarea {
+            width: 100%;
+            min-height: 140px;
+            padding: 16px 18px;
+            border-radius: 12px;
+            border: 1.5px solid #cbd5e1;
+            font-family: monospace;
+            background: #fafafa;
+            resize: vertical;
+            font-size: 13px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            transition: all 0.2s ease;
+        }
+        textarea:focus {
+            outline: none;
+            background: #fff;
+            border-color: #2563eb;
+            box-shadow: 0 4px 16px rgba(37,99,235,0.15);
         }
 
-        .error {
-            color: red;
-            font-size: 14px;
+        .notice {
+            display: flex; justify-content: center; align-items: center; margin: 150px auto;
         }
+        .notice-box {
+            display: flex; align-items: center;
+            background: linear-gradient(135deg, #e9eef8 0%, #f5f7fb 100%);
+            border: 1.5px solid #b0c4de;
+            border-radius: 20px;
+            padding: 15px 20px;
+            max-width: 680px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+        }
+        .notice-icon { font-size: 30px; margin-right: 12px; color: #1e3a5f; }
+        .notice-text { font-size: 14px; color: #2b2b2b; line-height: 1.6; }
+        .notice-text strong { color: #1e3a5f; }
     </style>
 </head>
 <body>
@@ -113,10 +160,6 @@
         <div id="removed" class="output"></div>
     </div>
 </div>
-
-<!-- 정규식 도움말 -->
-<div class="info">정규식 예시: <b>^apple.*</b>은 "apple"로 시작하는 모든 라인을 찾습니다.</div>
-<div class="error" id="regexError"></div>
 
 <script>
 let fileContent = "";
@@ -226,7 +269,7 @@ function filterText() {
                     new RegExp(k, ignoreCase ? "i" : "").test(line)
                 );
             } catch (e) {
-                document.getElementById("regexError").textContent = "정규식 오류: " + e.message;
+                alert("정규식 오류: " + e.message);
                 return;
             }
         } else {
@@ -241,9 +284,6 @@ function filterText() {
     // 출력
     document.getElementById("output").textContent = kept.join("\n");
     document.getElementById("removed").textContent = removed.join("\n");
-
-    // 오류 메시지 초기화
-    document.getElementById("regexError").textContent = "";
 }
 
 // 복사 기능
