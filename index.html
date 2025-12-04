@@ -5,9 +5,20 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://etech-symantec.github.io/style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap" rel="stylesheet">
     <meta charset="UTF-8">
     <title>텍스트 필터링 + 태그 + 정규식 도우미</title>
     <style>
+          /* 본문 스타일 */
+      .section { background: white; margin: 20px 0; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+      .section-header { background: #1e3a5f; color: white; padding: 6px 12px; border-radius: 8px 8px 0 0; font-weight: bold; }
+      table { width: 100%; border-collapse: collapse; }
+      th, td { border: 1px solid #ccc; padding: 6px 10px; text-align: center; font-size: 13px; }
+      th { background: #f0f2f5; font-weight: bold; }
+      tr.down-row { color: #999; background: #f9fafb; }
         body { font-family: 'Do Hyeon', sans-serif; margin: 20px; }
 
         .container {
@@ -111,7 +122,12 @@
     </style>
 </head>
 <body>
-
+<!-- 공통 헤더 + 제목 + 버전 -->
+<script>
+  window.pageTitle = "ISG Heartbeat 분석";
+  window.pageVersion = "ver.2025.11.20.01";
+</script> 
+<script src="https://etech-symantec.github.io/header.js"></script>
 <h2>텍스트 필터링 + 태그 + 정규식 도우미</h2>
 
 <!-- 파일 업로드 -->
