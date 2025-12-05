@@ -695,9 +695,11 @@ document.getElementById("fileInput").addEventListener("change", function () {
     reader.readAsText(file, "UTF-8");
 });
 
-// 엔터로 키워드 추가
-document.getElementById("keywordInput").addEventListener("keyup", function(e){
-    if (e.key === "Enter") addKeyword();
+/// 엔터로 키워드 추가
+document.getElementById("keywordInput").addEventListener("keyup", function(e) {
+    if (e.key === "Enter") {  // 엔터키를 누르면
+        addKeyword();  // 키워드를 추가하는 함수 호출
+    }
 });
 
 // 정규식 도우미 → 입력창에 삽입
@@ -868,7 +870,7 @@ function filterText() {
         outputDiv.appendChild(lineDiv);
     });
 
-    // 제거된 줄 표시 및 클릭하여 복구 기능 추가
+    // 제거된 줄 표시
     const removedDiv = document.getElementById("removed");
     removedDiv.innerHTML = "";
     removed.forEach((line, idx) => {
@@ -882,14 +884,6 @@ function filterText() {
         const textDiv = document.createElement("div");
         textDiv.className = "line-text";
         textDiv.textContent = line;
-        
-        // 클릭 시 복구되는 기능 추가
-        lineDiv.onclick = function() {
-            kept.push(line); // 복구된 줄을 남은 줄에 추가
-            removed.splice(idx, 1); // 삭제된 줄에서 해당 줄 삭제
-            removedLines.splice(idx, 1); // 해당 줄의 줄 번호도 삭제
-            filterText(); // 다시 필터링
-        };
         
         lineDiv.appendChild(numDiv);
         lineDiv.appendChild(textDiv);
