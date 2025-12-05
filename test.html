@@ -378,44 +378,50 @@
 
 <div class="container">
     <!-- 좌측 사이드바 -->
-    <div class="left-sidebar">
-        <!-- 파일 업로드 -->
-        <input type="file" id="fileInput" style="display:none;">
-        <!-- 키워드 입력칸 -->
-        <div class="input-area">
-            <input type="text" id="keywordInput" placeholder="키워드를 입력 후 Enter 또는 추가">
+        <div class="left-sidebar">
+            <div class="sidebar-section">
+                <h3>🔍 키워드 입력</h3>
+                <input type="text" id="keywordInput" placeholder="키워드를 입력하세요...">
+            </div>
+
+            <div class="sidebar-section">
+                <div class="options-container">
+                    <label>
+                        <input type="checkbox" id="ignoreCase">
+                        대소문자 무시
+                    </label>
+                    <label>
+                        <input type="checkbox" id="useRegex">
+                        정규식 사용
+                    </label>
+                </div>
+            </div>
+
+            <button onclick="addKeyword()">➕ 키워드 추가</button>
+
+            <div class="sidebar-section">
+                <div class="regex-helper">
+                    <strong>📝 정규식 도우미</strong>
+                    <button class="regex-btn" onclick="insertRegex('^')">^ 시작</button>
+                    <button class="regex-btn" onclick="insertRegex('$')">$ 끝</button>
+                    <button class="regex-btn" onclick="insertRegex('\\d')">\\d 숫자</button>
+                    <button class="regex-btn" onclick="insertRegex('.')">. 문자</button>
+                    <button class="regex-btn" onclick="insertRegex('[A-Za-z]')">영문자</button>
+                    <button class="regex-btn" onclick="insertRegex('\\s')">\\s 공백</button>
+                    <button class="regex-btn" onclick="insertRegex('*')">* 0회+</button>
+                    <button class="regex-btn" onclick="insertRegex('+')">+ 1회+</button>
+                    <button class="regex-btn" onclick="insertRegex('?')">? 옵션</button>
+                    <button class="regex-btn" onclick="insertRegex('|')">| OR</button>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3>🏷️ 등록된 키워드</h3>
+                <div id="keywordList"></div>
+            </div>
+
+            <button onclick="filterText()" style="margin-top: 15px;">✨ 필터 적용</button>
         </div>
-        <!-- 옵션 -->
-        <div class="options-container">
-            <label><input type="checkbox" id="ignoreCase"> 대소문자 무시</label><br>
-            <label><input type="checkbox" id="useRegex"> 정규식 사용</label><br><br>
-        </div>
-        <button onclick="addKeyword()">추가</button>
-
-        <!-- 정규식 도우미 버튼 -->
-        <div style="margin-top:10px;">
-            <strong>정규식 도우미:</strong><br>
-            <button class="regex-btn" onclick="insertRegex('^')">시작(^)</button>
-            <button class="regex-btn" onclick="insertRegex('$')">끝($)</button>
-            <button class="regex-btn" onclick="insertRegex('\\d')">숫자(\\d)</button>
-            <button class="regex-btn" onclick="insertRegex('.')">임의문자(.)</button>
-            <button class="regex-btn" onclick="insertRegex('[A-Za-z]')">영문자</button>
-            <button class="regex-btn" onclick="insertRegex('\\s')">공백(\\s)</button>
-            <button class="regex-btn" onclick="insertRegex('*')">0회 이상(*)</button>
-            <button class="regex-btn" onclick="insertRegex('+')">1회 이상(+)</button>
-            <button class="regex-btn" onclick="insertRegex('?')">옵션(?)</button>
-            <button class="regex-btn" onclick="insertRegex('|')">OR(|)</button>
-        </div>
-
-        <!-- 키워드 태그 -->
-        <div id="keywordList" style="margin-top:10px;"></div>
-
-        <br>
-
-        
-
-        <button onclick="filterText()">필터 적용</button>
-    </div>
 
     <!-- 우측 내용 -->
     <div class="right-content">
