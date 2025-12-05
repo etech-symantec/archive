@@ -166,6 +166,7 @@
 
         .input-area {
             display: flex;
+            gap: 8px;
             justify-content: center;
             align-items: center;
             padding: 10px;
@@ -220,7 +221,7 @@
         }
 
         #keywordInput {
-            width: 100%;
+            flex: 1;
             padding: 12px 15px;
             border-radius: 12px;
             border: 2px solid #e2e8f0;
@@ -258,7 +259,7 @@
         }
 
         button {
-            width: 100%;
+            white-space: nowrap;
             padding: 12px 20px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -278,6 +279,10 @@
 
         button:active {
             transform: translateY(0);
+        }
+        
+        .full-width-btn {
+            width: 100%;
         }
 
         .btn-secondary {
@@ -389,6 +394,12 @@
             }
         }
         
+        .removed-count {
+            color: #fbbf24;
+            font-size: 13px;
+            margin-left: 8px;
+        }
+        
     </style>
 </head>
 <body>
@@ -408,8 +419,10 @@
         <div class="left-sidebar">
             <div class="sidebar-section">
                 <h3>🔍 키워드 입력</h3>
-                <input type="text" id="keywordInput" placeholder="키워드를 입력하세요...">
-            </div>
+                <div class="input-area">
+                    <input type="text" id="keywordInput" placeholder="키워드를 입력하세요...">
+                    <button onclick="addKeyword()">추가</button>
+                </div>
 
             <div class="sidebar-section">
                 <div class="options-container">
@@ -423,8 +436,6 @@
                     </label>
                 </div>
             </div>
-
-            <button onclick="addKeyword()">➕ 키워드 추가</button>
 
             <div class="sidebar-section">
                 <div class="regex-helper">
@@ -447,7 +458,8 @@
                 <div id="keywordList"></div>
             </div>
 
-            <button onclick="filterText()" style="margin-top: 15px;">✨ 필터 적용</button>
+            <!-- 필터 적용 버튼 -->
+            <button class="full-width-btn" onclick="filterText()">✨ 필터 적용</button>
         </div>
 
     <!-- 우측 내용 -->
@@ -462,7 +474,9 @@
             </div>
         </div>
         <div class="box">
-            <div class="box-title">🗑 삭제 내용</div>
+            <div class="box-title">
+                <span>🗑 삭제 내용<span id="removedCount" class="removed-count"></span></span>
+            </div>
             <div id="removed" class="output"></div>
         </div>
     </div>
@@ -677,6 +691,10 @@ function filterText() {
         lineDiv.appendChild(textDiv);
         removedDiv.appendChild(lineDiv);
     });
+    
+    // 제거된 줄 수 표시
+    document.getElementById("removedCount").textContent = ` (${removed.length}줄)`;
+    
 }
 
 // 복사 기능
