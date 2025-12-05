@@ -757,13 +757,15 @@ function updateRegexPreview() {
             previewDiv.textContent = "❌ 매칭되는 줄이 없습니다";
             matchCountDiv.textContent = "";
         } else {
-            const preview = matchedLines.slice(0, 3).map((line, idx) => 
-                `${idx + 1}. ${line.substring(0, 50)}${line.length > 50 ? '...' : ''}`
+            // 모든 매칭되는 줄을 표시
+            const preview = matchedLines.map((line, idx) => 
+                `${idx + 1}. ${line}`
             ).join('\n');
             
             previewDiv.textContent = preview;
             matchCountDiv.textContent = `✅ 총 ${matchedLines.length}줄 매칭`;
             
+            // 매칭된 줄이 3개 이상일 때 "더 보기"를 표시
             if (matchedLines.length > 3) {
                 matchCountDiv.textContent += ` (${matchedLines.length - 3}줄 더 있음)`;
             }
