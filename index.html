@@ -311,10 +311,22 @@
             font-size: 14px;
         }
 
+        .regex-category {
+            margin-bottom: 15px;
+        }
+
+        .regex-category-title {
+            font-size: 12px;
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 6px;
+            display: block;
+        }
+
         .regex-btn {
             padding: 6px 12px;
-            margin: 4px;
-            font-size: 12px;
+            margin: 4px 2px;
+            font-size: 11px;
             cursor: pointer;
             background: white;
             color: #667eea;
@@ -322,14 +334,85 @@
             border-radius: 8px;
             transition: all 0.2s ease;
             display: inline-block;
-            width: auto;
             box-shadow: none;
+            position: relative;
         }
 
         .regex-btn:hover {
             background: #667eea;
             color: white;
             transform: translateY(-1px);
+        }
+        
+        .regex-btn[data-tooltip]:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1f2937;
+            color: white;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            white-space: nowrap;
+            z-index: 1000;
+            margin-bottom: 5px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .regex-btn[data-tooltip]:hover::before {
+            content: '';
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 5px solid transparent;
+            border-top-color: #1f2937;
+            margin-bottom: -5px;
+        }
+
+        .pattern-select {
+            width: 100%;
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            font-size: 13px;
+            margin-bottom: 10px;
+            background: white;
+            cursor: pointer;
+        }
+
+        .pattern-select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .regex-tester {
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 10px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .regex-tester-title {
+            font-size: 12px;
+            color: #4b5563;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .regex-preview {
+            font-family: monospace;
+            font-size: 11px;
+            color: #059669;
+            background: #ecfdf5;
+            padding: 8px;
+            border-radius: 6px;
+            min-height: 30px;
+            max-height: 80px;
+            overflow-y: auto;
         }
         
         #keywordList {
@@ -440,16 +523,67 @@
             <div class="sidebar-section">
                 <div class="regex-helper">
                     <strong>📝 정규식 도우미</strong>
-                    <button class="regex-btn" onclick="insertRegex('^')">^ 시작</button>
-                    <button class="regex-btn" onclick="insertRegex('$')">$ 끝</button>
-                    <button class="regex-btn" onclick="insertRegex('\\d')">\\d 숫자</button>
-                    <button class="regex-btn" onclick="insertRegex('.')">. 문자</button>
-                    <button class="regex-btn" onclick="insertRegex('[A-Za-z]')">영문자</button>
-                    <button class="regex-btn" onclick="insertRegex('\\s')">\\s 공백</button>
-                    <button class="regex-btn" onclick="insertRegex('*')">* 0회+</button>
-                    <button class="regex-btn" onclick="insertRegex('+')">+ 1회+</button>
-                    <button class="regex-btn" onclick="insertRegex('?')">? 옵션</button>
-                    <button class="regex-btn" onclick="insertRegex('|')">| OR</button>
+                    
+                    <!-- 자주 쓰는 패턴 선택 -->
+                    <select class="pattern-select" onchange="applyPattern(this.value)">
+                        <option value="">📋 자주 쓰는 패턴 선택</option>
+                        <option value="(?:[0-9]{1,3}\.){3}[0-9]{1,3}">🌐 IP 주소</option>
+                        <option value="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}">📧 이메일</option>
+                        <option value="https?://[^\s]+">🔗 URL</option>
+                        <option value="\d{4}-\d{2}-\d{2}">📅 날짜 (YYYY-MM-DD)</option>
+                        <option value="\d{2}:\d{2}:\d{2}">🕐 시간 (HH:MM:SS)</option>
+                        <option value="\.(jpg|jpeg|png|gif|bmp)$">🖼️ 이미지 파일</option>
+                        <option value="\.(txt|log|csv)$">📄 텍스트 파일</option>
+                        <option value="\d+\.\d+\.\d+\.\d+:\d+">🔌 IP:Port</option>
+                        <option value="[A-Z]{2,}">🔠 대문자만</option>
+                        <option value="\d{3}-\d{3,4}-\d{4}">📞 전화번호</option>
+                    </select>
+                    <div class="regex-category">
+                        <span class="regex-category-title">⚡ 기본 문법</span>
+                        <button class="regex-btn" data-tooltip="줄의 시작" onclick="insertRegex('^')">^</button>
+                        <button class="regex-btn" data-tooltip="줄의 끝" onclick="insertRegex('$')">$</button>
+                        <button class="regex-btn" data-tooltip="임의의 한 문자" onclick="insertRegex('.')">.</button>
+                        <button class="regex-btn" data-tooltip="0회 이상 반복" onclick="insertRegex('*')">*</button>
+                        <button class="regex-btn" data-tooltip="1회 이상 반복" onclick="insertRegex('+')">+</button>
+                        <button class="regex-btn" data-tooltip="0회 또는 1회" onclick="insertRegex('?')">?</button>
+                        <button class="regex-btn" data-tooltip="OR 조건" onclick="insertRegex('|')">|</button>
+                    </div>
+                    
+                    <div class="regex-category">
+                        <span class="regex-category-title">🔤 문자 클래스</span>
+                        <button class="regex-btn" data-tooltip="숫자 (0-9)" onclick="insertRegex('\\d')">\\d</button>
+                        <button class="regex-btn" data-tooltip="숫자가 아닌 문자" onclick="insertRegex('\\D')">\\D</button>
+                        <button class="regex-btn" data-tooltip="단어 문자 (a-zA-Z0-9_)" onclick="insertRegex('\\w')">\\w</button>
+                        <button class="regex-btn" data-tooltip="단어가 아닌 문자" onclick="insertRegex('\\W')">\\W</button>
+                        <button class="regex-btn" data-tooltip="공백 문자" onclick="insertRegex('\\s')">\\s</button>
+                        <button class="regex-btn" data-tooltip="공백이 아닌 문자" onclick="insertRegex('\\S')">\\S</button>
+                        <button class="regex-btn" data-tooltip="영문자 (대소문자)" onclick="insertRegex('[A-Za-z]')">[A-Za-z]</button>
+                        <button class="regex-btn" data-tooltip="영문자 소문자" onclick="insertRegex('[a-z]')">[a-z]</button>
+                        <button class="regex-btn" data-tooltip="영문자 대문자" onclick="insertRegex('[A-Z]')">[A-Z]</button>
+                        <button class="regex-btn" onclick="insertRegex('[A-Za-z]')">영어</button>
+                        <button class="regex-btn" onclick="insertRegex('[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]')">한글</button>
+                    </div>
+                    
+                    <div class="regex-category">
+                        <span class="regex-category-title">🔢 수량자</span>
+                        <button class="regex-btn" data-tooltip="정확히 n번" onclick="insertRegex('{n}')">{n}</button>
+                        <button class="regex-btn" data-tooltip="n번 이상" onclick="insertRegex('{n,}')">{n,}</button>
+                        <button class="regex-btn" data-tooltip="n번 이상 m번 이하" onclick="insertRegex('{n,m}')">{n,m}</button>
+                    </div>
+                    
+                    <div class="regex-category">
+                        <span class="regex-category-title">🎯 그룹 & 앵커</span>
+                        <button class="regex-btn" data-tooltip="그룹" onclick="insertRegex('()')">()</button>
+                        <button class="regex-btn" data-tooltip="문자 집합" onclick="insertRegex('[]')">[]</button>
+                        <button class="regex-btn" data-tooltip="단어 경계" onclick="insertRegex('\\b')">\\b</button>
+                        <button class="regex-btn" data-tooltip="비캡처 그룹" onclick="insertRegex('(?:)')">(?:)</button>
+                    </div>
+                    
+                    <div class="regex-tester">
+                        <div class="regex-tester-title">🔍 실시간 미리보기</div>
+                        <div id="regexPreview" class="regex-preview">정규식을 입력하면 매칭 결과가 표시됩니다</div>
+                        <div id="matchCount" class="match-count"></div>
+                    </div>
                 </div>
             </div>
 
