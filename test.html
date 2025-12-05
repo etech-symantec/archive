@@ -93,33 +93,23 @@
 
 
         .tag {
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
             color: white;
-            padding: 6px 12px;
-            margin: 4px;
-            border-radius: 18px;
+            padding: 8px 14px;
+            margin: 6px 4px;
+            border-radius: 20px;
             cursor: pointer;
-            font-size: 14px;
-            font-weight: bold;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
         }
-        
+
         .tag:hover {
-            background-color: #1e3a5f;
-        }
-
-        .regex-btn {
-            padding: 2px 6px;
-            margin: 1px;
-            font-size: 12px;
-            cursor: pointer;
-            background-color: #2563eb;
-            color: white;
-            border-radius: 8px;
-            border: none;
-        }
-
-        .regex-btn:hover {
-            background-color: #1d4ed8;
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
         }
 
         .input-area {
@@ -177,45 +167,134 @@
             margin: 0;
         }
 
-        /* 키워드 입력칸 스타일 */
         #keywordInput {
             width: 100%;
-            padding: 10px;
-            border-radius: 8px;
-            border: 1px solid #ccc;
+            padding: 12px 15px;
+            border-radius: 12px;
+            border: 2px solid #e2e8f0;
             font-size: 14px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-            margin-bottom: 10px;
-            background: #fafafa;
+            transition: all 0.3s ease;
         }
-        
+
         #keywordInput:focus {
             outline: none;
-            border-color: #1e3a5f;
-            box-shadow: 0 2px 6px rgba(30, 58, 95, 0.2);
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
-        
-        /* 키워드 태그 스타일 */
-        #keywordList {
-            margin-top: 10px;
+
+        .options-container {
+            background: #f7fafc;
+            padding: 15px;
+            border-radius: 12px;
+            margin: 15px 0;
+        }
+
+        .options-container label {
             display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #4a5568;
+        }
+
+        .options-container input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
         }
 
         button {
-            padding: 8px 15px;
-            background-color: #2563eb;
+            width: 100%;
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            border-radius: 8px;
+            border-radius: 12px;
             border: none;
             cursor: pointer;
-            font-size: 14px;
-            margin-top: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
         }
 
         button:hover {
-            background-color: #1d4ed8;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+            box-shadow: none;
+        }
+
+        .btn-secondary:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .regex-helper {
+            background: #f7fafc;
+            padding: 15px;
+            border-radius: 12px;
+            margin: 15px 0;
+        }
+
+        .regex-helper strong {
+            display: block;
+            margin-bottom: 10px;
+            color: #2d3748;
+            font-size: 14px;
+        }
+
+        .regex-btn {
+            padding: 6px 12px;
+            margin: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            background: white;
+            color: #667eea;
+            border: 1px solid #667eea;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            display: inline-block;
+            width: auto;
+            box-shadow: none;
+        }
+
+        .regex-btn:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-1px);
+        }
+        
+        #keywordList {
+            min-height: 50px;
+            padding: 10px;
+            background: #f7fafc;
+            border-radius: 12px;
+        }
+        
+        .copy-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 8px 16px;
+            font-size: 13px;
+            width: auto;
+            box-shadow: none;
+        }
+
+        .copy-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: none;
         }
 
         /* 줄 번호 표시 */
@@ -224,6 +303,65 @@
             font-size: 12px;
             margin-right: 10px;
         }
+        
+        /* 스크롤바 스타일 */
+        .output::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .output::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .output::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 10px;
+        }
+
+        .output::-webkit-scrollbar-thumb:hover {
+            background: #764ba2;
+        }
+        
+        /* 애니메이션 */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 반응형 */
+        @media (max-width: 1024px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .left-sidebar {
+                width: 100%;
+                position: static;
+            }
+
+            .main-header h1 {
+                font-size: 2em;
+            }
+        }
+        
     </style>
 </head>
 <body>
@@ -243,24 +381,16 @@
     <div class="left-sidebar">
         <!-- 파일 업로드 -->
         <input type="file" id="fileInput" style="display:none;">
-        
         <!-- 키워드 입력칸 -->
         <div class="input-area">
             <input type="text" id="keywordInput" placeholder="키워드를 입력 후 Enter 또는 추가">
         </div>
-        
-        <!-- 키워드 태그 UI (남은 줄, 제거된 줄 사이에 배치될 곳) -->
-        <div id="keywordList" style="margin-top:10px;"></div>
-    
         <!-- 옵션 -->
         <div class="options-container">
             <label><input type="checkbox" id="ignoreCase"> 대소문자 무시</label><br>
             <label><input type="checkbox" id="useRegex"> 정규식 사용</label><br><br>
         </div>
-        
         <button onclick="addKeyword()">추가</button>
-    </div>
-
 
         <!-- 정규식 도우미 버튼 -->
         <div style="margin-top:10px;">
