@@ -66,7 +66,7 @@
             border-radius: 8px 8px 0 0;
         }
 
-        /* "남은 줄" 박스에 드래그 앤 드롭 스타일 추가 */
+        /* "Archive Config 내용" 박스에 드래그 앤 드롭 스타일 추가 */
         .output {
             white-space: pre-wrap;
             border: 1px solid #ccc;
@@ -83,7 +83,7 @@
             background-color: #f0f7ff;  /* 마우스 오버 시 색상 변경 */
         }
         
-        /* "남은 줄" 안내문구 스타일 */
+        /* "Archive Config 내용" 안내문구 스타일 */
         #dragText {
             text-align: center;
             color: #888;
@@ -425,17 +425,17 @@
 
     <!-- 우측 내용 -->
     <div class="right-content">
-        <!-- 남은 줄 박스에 초기 안내문구 추가 -->
+        <!-- Archive Config 내용 박스에 초기 안내문구 추가 -->
         <div class="box">
-            <div class="box-title">📌 남은 줄
-                <button onclick="copyResult()">남은 줄 복사</button>
+            <div class="box-title">📌 Archive Config 내용
+                <button onclick="copyResult()">Archive Config 내용 복사</button>
             </div>
             <div id="output" class="output">
                 <p id="dragText">여기에 텍스트 파일을 드래그하여 업로드하세요.</p>
             </div>
         </div>
         <div class="box">
-            <div class="box-title">🗑 제거된 줄</div>
+            <div class="box-title">🗑 삭제 내용</div>
             <div id="removed" class="output"></div>
         </div>
     </div>
@@ -475,7 +475,7 @@ window.onload = function() {
     renderKeywordTags();
 };
 
-// "남은 줄" 박스에 드래그 앤 드롭 기능 추가
+// "Archive Config 내용" 박스에 드래그 앤 드롭 기능 추가
 document.getElementById("output").addEventListener("dragover", function(e) {
     e.preventDefault();
     e.stopPropagation();
@@ -611,18 +611,52 @@ function filterText() {
         }
     });
 
-    // 남은 줄에 줄 번호 추가
-    document.getElementById("output").textContent = kept.map((line, idx) => `${idx + 1}: ${line}`).join("\n");
+    // 남은 줄 표시
+    const outputDiv = document.getElementById("output");
+    outputDiv.innerHTML = "";
+    kept.forEach((line, idx) => {
+        const lineDiv = document.createElement("div");
+        lineDiv.className = "code-line";
+        
+        const numDiv = document.createElement("div");
+        numDiv.className = "line-number";
+        numDiv.textContent = idx + 1;
+        
+        const textDiv = document.createElement("div");
+        textDiv.className = "line-text";
+        textDiv.textContent = line;
+        
+        lineDiv.appendChild(numDiv);
+        lineDiv.appendChild(textDiv);
+        outputDiv.appendChild(lineDiv);
+    });
 
-    // 제거된 줄에 줄 번호 추가
-    document.getElementById("removed").textContent = removed.map((line, idx) => `${removedLines[idx]}: ${line}`).join("\n");
+    // 제거된 줄 표시
+    const removedDiv = document.getElementById("removed");
+    removedDiv.innerHTML = "";
+    removed.forEach((line, idx) => {
+        const lineDiv = document.createElement("div");
+        lineDiv.className = "code-line";
+        
+        const numDiv = document.createElement("div");
+        numDiv.className = "line-number";
+        numDiv.textContent = removedLines[idx];
+        
+        const textDiv = document.createElement("div");
+        textDiv.className = "line-text";
+        textDiv.textContent = line;
+        
+        lineDiv.appendChild(numDiv);
+        lineDiv.appendChild(textDiv);
+        removedDiv.appendChild(lineDiv);
+    });
 }
 
 // 복사 기능
 function copyResult() {
     const text = document.getElementById("output").innerText;
     navigator.clipboard.writeText(text)
-        .then(() => alert("남은 줄이 복사되었습니다!"));
+        .then(() => alert("Archive Config 내용이 복사되었습니다!"));
 }
 </script>
 
