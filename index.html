@@ -526,6 +526,7 @@
                     <!-- 자주 쓰는 패턴 선택 -->
                     <select class="pattern-select" onchange="applyPattern(this.value)">
                         <option value="">📋 자주 쓰는 패턴 선택</option>
+                        <option value="^\-+[\w]+ CERTIFICATE\-+[\w\/\+\n]+\-+[\w]+ CERTIFICATE\-+$">🪪 SSL 인증서 값</option>
                         <option value="(?:[0-9]{1,3}\.){3}[0-9]{1,3}">🌐 IP 주소</option>
                         <option value="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}">📧 이메일</option>
                         <option value="https?://[^\s]+">🔗 URL</option>
@@ -641,7 +642,7 @@ function randomColor() {
 }
 
 // 기본 키워드 그룹 (요청하신: line, google)
-const defaultKeywords = ["menlo", "keyring"];
+const defaultKeywords = ["menlo", "keyring", "^\-+[\w]+ CERTIFICATE\-+[\w\/\+\n]+\-+[\w]+ CERTIFICATE\-+$"];
 
 // 웹 로드 시 기본 키워드 추가
 window.onload = function() {
