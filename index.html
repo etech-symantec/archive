@@ -604,7 +604,7 @@
                 <button class="copy-btn" onclick="copyResult()">Archive Config 내용 복사</button>
             </div>
             <div id="output" class="output">
-                <p id="dragText">👇🏻여기에 텍스트 파일을 올려주세요.</p>
+                <p id="dragText">👇🏻여기에 편집할 archconf 파일을 올려주세요.</p>
             </div>
         </div>
         <div class="box">
@@ -811,17 +811,13 @@ function filterText() {
     const useRegex = document.getElementById("useRegex").checked;
 
     const lines = fileContent.split(/\r?\n/);
-
     let kept = [];
     let removed = [];
-    let removedLines = [];
 
-    // 키워드 준비
     const searchKeywords = keywords.map(k => ignoreCase ? k.text.toLowerCase() : k.text);
 
     lines.forEach((line, index) => {
         const processedLine = ignoreCase ? line.toLowerCase() : line;
-
         let matchFound = false;
 
         if (useRegex) {
@@ -830,15 +826,13 @@ function filterText() {
                     new RegExp(k, ignoreCase ? "i" : "").test(line)
                 );
             } catch (e) {
-                // 오류 발생 시 사용자에게 명확한 메시지 출력
                 alert("정규식 오류: 유효하지 않은 정규식입니다. 다시 확인해 주세요.");
-                return;  // 오류 발생 시 더 이상 진행되지 않도록 처리
+                return;
             }
         } else {
             matchFound = searchKeywords.some(k => processedLine.includes(k));
         }
 
-        // OR 고정 → 하나라도 맞으면 제거
         if (matchFound) {
             removed.push(line);
             removedLines.push(index + 1); // 줄 번호
@@ -894,11 +888,11 @@ function filterText() {
         lineDiv.appendChild(textDiv);
         removedDiv.appendChild(lineDiv);
     });
-    
+
     // 제거된 줄 수 표시
     document.getElementById("removedCount").textContent = ` (${removed.length}줄)`;
-    
 }
+
 
 // 복사 기능
 function copyResult() {
