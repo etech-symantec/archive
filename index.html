@@ -139,7 +139,7 @@
         #dragText {
             text-align: center;
             color: #888;
-            font-size: 16px;
+            font-size: 26px;
             font-style: italic;
         }
 
@@ -604,7 +604,7 @@
                 <button class="copy-btn" onclick="copyResult()">Archive Config 내용 복사</button>
             </div>
             <div id="output" class="output">
-                <p id="dragText">여기에 텍스트 파일을 드래그하여 업로드하세요.</p>
+                <p id="dragText">👇🏻여기에 텍스트 파일을 올려주세요.</p>
             </div>
         </div>
         <div class="box">
@@ -632,15 +632,16 @@ window.onload = function() {
 // 🎨 랜덤 색상 생성
 function randomColor() {
     const colors = [
-        "#ff7f7f", "#ffb27f", "#ffe77f",
-        "#a0ff7f", "#7fffd4", "#7fbaff",
-        "#c27fff", "#ff7fe5"
+        "#F38181", "#FCE38A", "#95E1D3",
+        "#A8D8EA", "#AA96DA", "#FCBAD3",
+        "#6096B4", "#8D7B68", "#609966",
+        "#C06C84", "#FFDE7D", "#00A8CC"
     ];
     return colors[Math.floor(Math.random() * colors.length)];
 }
 
 // 기본 키워드 그룹 (요청하신: line, google)
-const defaultKeywords = ["test", "google"];
+const defaultKeywords = ["menlo", "keyring"];
 
 // 웹 로드 시 기본 키워드 추가
 window.onload = function() {
@@ -866,7 +867,7 @@ function filterText() {
         outputDiv.appendChild(lineDiv);
     });
 
-    // 제거된 줄 표시
+    // 제거된 줄 표시 및 클릭하여 복구 기능 추가
     const removedDiv = document.getElementById("removed");
     removedDiv.innerHTML = "";
     removed.forEach((line, idx) => {
@@ -880,6 +881,14 @@ function filterText() {
         const textDiv = document.createElement("div");
         textDiv.className = "line-text";
         textDiv.textContent = line;
+        
+        // 클릭 시 복구되는 기능 추가
+        lineDiv.onclick = function() {
+            kept.push(line); // 복구된 줄을 남은 줄에 추가
+            removed.splice(idx, 1); // 삭제된 줄에서 해당 줄 삭제
+            removedLines.splice(idx, 1); // 해당 줄의 줄 번호도 삭제
+            filterText(); // 다시 필터링
+        };
         
         lineDiv.appendChild(numDiv);
         lineDiv.appendChild(textDiv);
