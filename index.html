@@ -6,7 +6,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap" rel="stylesheet">
     <meta charset="UTF-8">
-    <title>22222222ProxySG Archive Config 편집기</title>
+    <title>ProxySG Archive Config 편집기</title>
     <style>
         /* 본문 스타일 */
           .section { background: white; margin: 20px 0; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
@@ -410,9 +410,11 @@
             background: #ecfdf5;
             padding: 8px;
             border-radius: 6px;
-            min-height: 60px; /* 높이를 2배로 증가 */
-            max-height: 200px; /* 최대 높이 200px로 설정 */
+            min-height: 120px; /* 높이를 2배로 증가 */
+            max-height: 300px; /* 최대 높이 200px로 설정 */
             overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
         }
         
         #keywordList {
@@ -521,6 +523,14 @@
             </div>
 
             <div class="sidebar-section">
+                <h3>🏷️ 등록된 키워드</h3>
+                <div id="keywordList"></div>
+            </div>
+
+            <!-- 필터 적용 버튼 -->
+            <button class="full-width-btn" onclick="filterText()">✨ 필터 적용</button>
+
+            <div class="sidebar-section">
                 <div class="regex-helper">
                     <strong>📝 정규식 도우미</strong>
                     
@@ -588,13 +598,6 @@
                 </div>
             </div>
 
-            <div class="sidebar-section">
-                <h3>🏷️ 등록된 키워드</h3>
-                <div id="keywordList"></div>
-            </div>
-
-            <!-- 필터 적용 버튼 -->
-            <button class="full-width-btn" onclick="filterText()">✨ 필터 적용</button>
         </div>
     </div>
 
