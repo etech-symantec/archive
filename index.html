@@ -6,7 +6,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap" rel="stylesheet">
     <meta charset="UTF-8">
-    <title>ProxySG Archive Config 편집기</title>
+    <title>22222222ProxySG Archive Config 편집기</title>
     <style>
         /* 본문 스타일 */
           .section { background: white; margin: 20px 0; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
@@ -811,13 +811,17 @@ function filterText() {
     const useRegex = document.getElementById("useRegex").checked;
 
     const lines = fileContent.split(/\r?\n/);
+
     let kept = [];
     let removed = [];
+    let removedLines = [];
 
+    // 키워드 준비
     const searchKeywords = keywords.map(k => ignoreCase ? k.text.toLowerCase() : k.text);
 
     lines.forEach((line, index) => {
         const processedLine = ignoreCase ? line.toLowerCase() : line;
+
         let matchFound = false;
 
         if (useRegex) {
@@ -826,13 +830,15 @@ function filterText() {
                     new RegExp(k, ignoreCase ? "i" : "").test(line)
                 );
             } catch (e) {
+                // 오류 발생 시 사용자에게 명확한 메시지 출력
                 alert("정규식 오류: 유효하지 않은 정규식입니다. 다시 확인해 주세요.");
-                return;
+                return;  // 오류 발생 시 더 이상 진행되지 않도록 처리
             }
         } else {
             matchFound = searchKeywords.some(k => processedLine.includes(k));
         }
 
+        // OR 고정 → 하나라도 맞으면 제거
         if (matchFound) {
             removed.push(line);
             removedLines.push(index + 1); // 줄 번호
@@ -888,7 +894,7 @@ function filterText() {
         lineDiv.appendChild(textDiv);
         removedDiv.appendChild(lineDiv);
     });
-
+    
     // 제거된 줄 수 표시
     document.getElementById("removedCount").textContent = ` (${removed.length}줄)`;
 }
