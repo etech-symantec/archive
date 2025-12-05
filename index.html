@@ -701,8 +701,68 @@ document.getElementById("keywordInput").addEventListener("keyup", function(e){
 // 정규식 도우미 → 입력창에 삽입
 function insertRegex(text) {
     const input = document.getElementById("keywordInput");
-    input.value += text;
+    const start = input.selectionStart;
+    const end = input.selectionEnd;
+    const value = input.value;
+    
+    input.value = value.substring(0, start) + text + value.substring(end);
+    
+    const newPos = start + text.length;
+    input.setSelectionRange(newPos, newPos);
     input.focus();
+    
+    updateRegexPreview();
+}
+
+function applyPattern(pattern) {
+    if (!pattern) return;
+    
+    const input = document.getElementById("keywordInput");
+    input.value = pattern;
+    input.focus();
+    
+    updateRegexPreview();
+    
+    document.querySelector('.pattern-select').value = "";
+}
+
+function updateRegexPreview() {
+    const input = document.getElementById("keywordInput").value;
+    const previewDiv = document.getElementById("regexPreview");
+    const matchCountDiv = document.getElementById("matchCount");
+    const useRegex = document.getElementById("useRegex").checked;
+    const ignoreCase = document.getElementById("ignoreCase").checked;
+    
+    if (!input || !fileContent || !useRegex) {
+        previewDiv.textContent = "정규식을 입력하면 매칭 결과가 표시됩니다";
+        matchCountDiv.textContent = "";
+        return;
+    }
+    
+    try {
+        const regex = new RegExp(input, ignoreCase ? "i" : "");
+        const lines = fileContent.split(/\r?\n/);
+        const matchedLines = lines.filter(line => regex.test(line));
+        
+        if (matchedLines.length === 0) {
+            previewDiv.textContent = "❌ 매칭되는 줄이 없습니다";
+            matchCountDiv.textContent = "";
+        } else {
+            const preview = matchedLines.slice(0, 3).map((line, idx) => 
+                `${idx + 1}. ${line.substring(0, 50)}${line.length > 50 ? '...' : ''}`
+            ).join('\n');
+            
+            previewDiv.textContent = preview;
+            matchCountDiv.textContent = `✅ 총 ${matchedLines.length}줄 매칭`;
+            
+            if (matchedLines.length > 3) {
+                matchCountDiv.textContent += ` (${matchedLines.length - 3}줄 더 있음)`;
+            }
+        }
+    } catch (e) {
+        previewDiv.textContent = "⚠️ 유효하지 않은 정규식입니다";
+        matchCountDiv.textContent = "";
+    }
 }
 
 // 키워드 추가
