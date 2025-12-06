@@ -435,7 +435,6 @@
             min-height: 120px; /* 높이를 2배로 증가 */
             max-height: 400px; /* 최대 높이 200px로 설정 */
             overflow-y: auto;
-            white-space: pre-wrap;
             word-wrap: break-word;
         }
         
@@ -505,14 +504,26 @@
             border: 1px solid rgba(255,255,255,0.3);
             padding: 8px 16px;
             font-size: 13px;
-            width: auto;
-            box-shadow: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
         }
-
+        
         .copy-btn:hover {
             background: rgba(255,255,255,0.3);
-            transform: none;
+            transform: translateY(-1px);
         }
+        
+        
+        #downloadBtn {
+            background: linear-gradient(135deg, #10b981, #059669);
+            border-color: rgba(16,185,129,0.3);
+        }
+        
+        #downloadBtn:hover {
+            background: linear-gradient(135deg, #059669, #047857);
+        }
+
         
         
         /* 애니메이션 */
@@ -682,7 +693,10 @@
         <!-- Archive Config 내용 박스에 초기 안내문구 추가 -->
         <div class="box">
             <div class="box-title">📌 Archive Config 내용
-                <button class="copy-btn" onclick="copyResult()">Archive Config 내용 복사</button>
+                <div style="display: flex; gap: 8px;">
+                    <button class="copy-btn" onclick="copyResult()">📋 복사</button>
+                    <button class="copy-btn" id="downloadBtn" onclick="downloadTxt()">📥 TXT 다운로드</button>
+                </div>
             </div>
             <div id="output" class="output">
                 <p id="dragText">👇🏻여기에 편집할 archconf 파일을 올려주세요.</p>
@@ -993,12 +1007,60 @@ function filterText() {
 }
 
 
-// 복사 기능
-function copyResult() {
-    const text = document.getElementById("output").innerText;
-    navigator.clipboard.writeText(text)
-        .then(() => alert("Archive Config 내용이 복사되었습니다!"));
+let uploadedFileName = ""; // 업로드된 파일명 저장
+
+// ✅ 드래그 앤 드롭에서 파일명 저장
+document.getElementById("output").addEventListener("drop", function(e) {
+    // 기존 코드...
+    const file = e.dataTransfer.files[0];
+    if (file) {
+        uploadedFileName = file.name.replace(/\.[^/.]+$/, ""); // 확장자 제거
+        document.getElementById("downloadBtn").style.display = "inline-block";
+        // 나머지 기존 로직...
+    }
+});
+
+// ✅ TXT 다운로드 함수
+function downloadTxt() {
+    const keptLines = document.querySelectorAll("#output .line-text");
+    const content = Array.from(keptLines).map(el => el.textContent).join('\n');
+    
+    if (!content.trim()) {
+        alert("다운로드할 내용이 없습니다!");
+        return;
+    }
+    
+    // 파일명 생성: original_edited_20251206
+    const today = new Date().toISOString().slice(0,10).replace(/-/g, "");
+    const fileName = uploadedFileName ? 
+        `${uploadedFileName}_edited_${today}.txt` : 
+        `archconf_edited_${today}.txt`;
+    
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = fileName;
+    link.click();
+    URL.revokeObjectURL(link.href);
+    
+    console.log(`📥 "${fileName}" 다운로드 완료!`);
 }
+
+// ✅ 복사 함수도 수정 (더 정확히)
+function copyResult() {
+    const keptLines = document.querySelectorAll("#output .line-text");
+    const content = Array.from(keptLines).map(el => el.textContent).join('\n');
+    
+    if (!content.trim()) {
+        alert("복사할 내용이 없습니다!");
+        return;
+    }
+    
+    navigator.clipboard.writeText(content).then(() => {
+        alert("✅ Archive Config 내용이 복사되었습니다!");
+    });
+}
+
 </script>
 
 
