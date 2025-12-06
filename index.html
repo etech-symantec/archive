@@ -664,7 +664,7 @@
             border-radius: 12px;
         }
         
-        .nav-btn {
+        .search-nav-btn {
             background: linear-gradient(135deg, #3E5879 0%, #1E3A60 100%);
             border: none;
             color: white;
@@ -681,12 +681,12 @@
             justify-content: center;
         }
         
-        .nav-btn:hover:not(:disabled) {
+        .search-nav-btn:hover:not(:disabled) {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             transform: scale(1.2);
         }
         
-        .nav-btn:disabled {
+        .search-nav-btn:disabled {
             opacity: 0.3;
             cursor: not-allowed;
         }
@@ -819,9 +819,9 @@
                     <button class="search-btn" onclick="searchContent()">🔍</button>
                     <span id="searchCount" class="search-count" style="display:none;">0개</span>
                     <div class="search-nav" style="display:none;">
-                        <button class="nav-btn" onclick="navigateSearch(-1)">⬆</button>
+                        <button class="search-nav-btn" onclick="navigateSearch(-1)">⬆</button>
                         <span id="currentSearchPos">1/5</span>
-                        <button class="nav-btn" onclick="navigateSearch(1)">⬇</button>
+                        <button class="search-nav-btn" onclick="navigateSearch(1)">⬇</button>
                     </div>
                     <button class="search-to-keyword-btn" onclick="addSearchToKeyword()">➕</button>
                     <button class="copy-btn-small" id="copyBtn" onclick="copyResult()" style="display:none;">📋</button>
