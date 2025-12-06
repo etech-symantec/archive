@@ -395,11 +395,33 @@
             border: 1px solid #e5e7eb;
         }
 
+        .regex-tester-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
         .regex-tester-title {
             font-size: 12px;
             color: #4b5563;
             font-weight: 600;
-            margin-bottom: 8px;
+        }
+        
+        .match-count {
+            font-size: 11px;
+            color: #059669;
+            font-weight: 600;
+            background: #ecfdf5;
+            padding: 4px 8px;
+            border-radius: 6px;
+            border: 1px solid #a7f3d0;
+            white-space: nowrap;
+        }
+        
+        /* 빈 상태일 때 */
+        .match-count:empty {
+            display: none;
         }
 
         /* 정규식 도우미 실시간 미리보기 */
@@ -411,11 +433,64 @@
             padding: 8px;
             border-radius: 6px;
             min-height: 120px; /* 높이를 2배로 증가 */
-            max-height: 300px; /* 최대 높이 200px로 설정 */
+            max-height: 400px; /* 최대 높이 200px로 설정 */
             overflow-y: auto;
             white-space: pre-wrap;
             word-wrap: break-word;
         }
+        
+        /* 스크롤바 예쁘게 */
+        .regex-preview::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .regex-preview::-webkit-scrollbar-track {
+            background: #ecfdf5;
+            border-radius: 10px;
+        }
+        
+        .regex-preview::-webkit-scrollbar-thumb {
+            background: #10b981;
+            border-radius: 10px;
+        }
+        
+        .regex-preview::-webkit-scrollbar-thumb:hover {
+            background: #059669;
+        }
+        
+        /* 실시간 미리보기 줄 번호 스타일 */
+        .preview-line {
+            display: flex;
+            padding: 4px 0;
+            border-bottom: 1px solid #ecfdf5;
+            font-family: ui-monospace, monospace;
+            font-size: 11px;
+        }
+        
+        .preview-line:hover {
+            background-color: #d1fae5;
+        }
+        
+        .preview-number {
+            min-width: 30px;
+            padding: 0 8px;
+            text-align: right;
+            color: #059669;
+            background-color: #ecfdf5;
+            border-right: 1px solid #a7f3d0;
+            font-weight: 600;
+            user-select: none;
+        }
+        
+        .preview-text {
+            padding: 0 8px;
+            flex: 1;
+            color: #065f46;
+            white-space: pre-wrap;
+            word-break: break-all;
+            overflow-wrap: break-word;
+        }
+
         
         #keywordList {
             min-height: 50px;
@@ -587,10 +662,15 @@
                     </div>
                     
                     <div class="regex-tester">
-                        <div class="regex-tester-title">🔍 실시간 미리보기</div>
-                        <div id="regexPreview" class="regex-preview">정규식을 입력하면 매칭 결과가 표시됩니다</div>
-                        <div id="matchCount" class="match-count"></div>
+                        <div class="regex-tester-header">
+                            <span class="regex-tester-title">🔍 실시간 미리보기</span>
+                            <span id="matchCount" class="match-count"></span>
+                        </div>
+                        <div id="regexPreview" class="regex-preview">
+                            정규식을 입력하면 매칭 결과가 표시됩니다
+                        </div>
                     </div>
+
                 </div>
             </div>
 
@@ -738,11 +818,10 @@ function updateRegexPreview() {
     const input = document.getElementById("keywordInput").value;
     const previewDiv = document.getElementById("regexPreview");
     const matchCountDiv = document.getElementById("matchCount");
-    const useRegex = true;
     const ignoreCase = document.getElementById("ignoreCase").checked;
     
-    if (!input || !fileContent || !useRegex) {
-        previewDiv.textContent = "정규식을 입력하면 매칭 결과가 표시됩니다";
+    if (!input || !fileContent) {
+        previewDiv.innerHTML = '<div style="text-align:center;color:#6b7280;padding:40px;font-style:italic;">정규식을 입력하면 매칭 결과가 표시됩니다</div>';
         matchCountDiv.textContent = "";
         return;
     }
@@ -753,27 +832,40 @@ function updateRegexPreview() {
         const matchedLines = lines.filter(line => regex.test(line));
         
         if (matchedLines.length === 0) {
-            previewDiv.textContent = "❌ 매칭되는 줄이 없습니다";
+            previewDiv.innerHTML = '<div style="text-align:center;color:#ef4444;padding:40px;">❌ 매칭되는 줄이 없습니다</div>';
             matchCountDiv.textContent = "";
         } else {
-            // 모든 매칭되는 줄을 표시
-            const preview = matchedLines.map((line, idx) => 
-                `${idx + 1}. ${line}`
-            ).join('\n');
+            // ✅ 모든 줄 표시 (10줄 제한 제거!)
+            const previewHTML = matchedLines.map((line, idx) => 
+                `<div class="preview-line">
+                    <span class="preview-number">${idx + 1}</span>
+                    <span class="preview-text">${escapeHtml(line)}</span>
+                </div>`
+            ).join('');
             
-            previewDiv.textContent = preview;
-            matchCountDiv.textContent = `✅ 총 ${matchedLines.length}줄 매칭`;
-            
-            // 매칭된 줄이 3개 이상일 때 "더 보기"를 표시
-            if (matchedLines.length > 3) {
-                matchCountDiv.textContent += ` (${matchedLines.length - 3}줄 더 있음)`;
-            }
+            previewDiv.innerHTML = previewHTML;
+            // ✅ 제목 우측에 매칭 수 표시
+            matchCountDiv.textContent = `총 ${matchedLines.length}줄`;
         }
     } catch (e) {
-        previewDiv.textContent = "⚠️ 유효하지 않은 정규식입니다";
+        previewDiv.innerHTML = '<div style="text-align:center;color:#f59e0b;padding:40px;">⚠️ 유효하지 않은 정규식입니다</div>';
         matchCountDiv.textContent = "";
     }
 }
+
+
+// ✅ HTML 이스케이프 함수 추가
+function escapeHtml(text) {
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+    return text.replace(/[&<>"']/g, m => map[m]);
+}
+
 
 // 키워드 추가
 function addKeyword() {
