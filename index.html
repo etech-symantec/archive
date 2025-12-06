@@ -515,10 +515,6 @@
                         <input type="checkbox" id="ignoreCase">
                         대소문자 무시
                     </label>
-                    <label>
-                        <input type="checkbox" id="useRegex">
-                        정규식 사용
-                    </label>
                 </div>
             </div>
 
@@ -821,7 +817,7 @@ function filterText() {
     if (!fileContent) return;
 
     const ignoreCase = document.getElementById("ignoreCase").checked;
-    const useRegex = document.getElementById("useRegex").checked;
+    const useRegex = true; // ✅ 항상 정규식 사용
 
     const lines = fileContent.split(/\r?\n/);
 
