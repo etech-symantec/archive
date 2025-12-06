@@ -738,7 +738,7 @@ function updateRegexPreview() {
     const input = document.getElementById("keywordInput").value;
     const previewDiv = document.getElementById("regexPreview");
     const matchCountDiv = document.getElementById("matchCount");
-    const useRegex = document.getElementById("useRegex").checked;
+    const useRegex = true;
     const ignoreCase = document.getElementById("ignoreCase").checked;
     
     if (!input || !fileContent || !useRegex) {
