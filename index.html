@@ -498,34 +498,6 @@
             border-radius: 12px;
         }
         
-        .copy-btn {
-            background: rgba(255,255,255,0.2);
-            color: white;
-            border: 1px solid rgba(255,255,255,0.3);
-            padding: 8px 16px;
-            font-size: 13px;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .copy-btn:hover {
-            background: rgba(255,255,255,0.3);
-            transform: translateY(-1px);
-        }
-        
-        
-        #downloadBtn {
-            background: linear-gradient(135deg, #10b981, #059669);
-            border-color: rgba(16,185,129,0.3);
-        }
-        
-        #downloadBtn:hover {
-            background: linear-gradient(135deg, #059669, #047857);
-        }
-
-        
-        
         /* 애니메이션 */
         @keyframes fadeIn {
             from {
@@ -572,7 +544,7 @@
         }
         
         .content-search-input {
-            width: 160px;
+            width: 180px;
             padding: 6px 10px;
             border: 1px solid rgba(255,255,255,0.3);
             border-radius: 6px;
@@ -584,9 +556,9 @@
         
         .content-search-input:focus {
             outline: none;
-            border-color: #10b981;
+            border-color: #00CAFF;
             background: white;
-            width: 200px;
+            width: 250px;
             box-shadow: 0 0 0 2px rgba(16,185,129,0.2);
         }
         
@@ -606,7 +578,7 @@
         /* 검색 결과 수 표시 */
         .search-count {
             font-size: 11px;
-            color: #10b981;
+            color: #E2EFFD;
             font-weight: 600;
             background: rgba(16,185,129,0.1);
             padding: 2px 6px;
@@ -617,30 +589,26 @@
         
         /* 검색어 → 키워드 버튼 */
         .search-to-keyword-btn {
-            background: linear-gradient(135deg, #10b981, #059669);
-            border: none;
+            white-space: nowrap;
+            padding: 4px 4px;
+            background: linear-gradient(135deg, #F5EFFF 0%, #A294F9 100%);
             color: white;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            font-size: 12px;
+            border-radius: 12px;
+            border: none;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
+            font-size: 12px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
         }
         
         .search-to-keyword-btn:hover {
-            transform: scale(1.1);
+            transform: scale(1.2);
             box-shadow: 0 4px 12px rgba(16,185,129,0.4);
         }
         
         /* 작은 버튼 */
         .copy-btn-small {
-            background: rgba(255,255,255,0.2);
-            color: white;
-            border: 1px solid rgba(255,255,255,0.3);
+            background: linear-gradient(135deg, #DDF4E7 0%, #FAF1E6 100%);
             padding: 4px 8px !important;
             font-size: 11px !important;
             width: 32px;
@@ -654,35 +622,36 @@
         }
         
         .copy-btn-small:hover {
-            background: rgba(255,255,255,0.4);
-            transform: translateY(-1px);
+            transform: translateY(-3px);
         }
         
         #downloadBtn.copy-btn-small {
-            background: linear-gradient(135deg, #10b981, #059669);
+            background: linear-gradient(135deg, #FFEDFA 0%, #AFDDFF 100%);
         }
         
         #downloadBtn.copy-btn-small:hover {
-            background: linear-gradient(135deg, #059669, #047857);
+            transform: translateY(-3px);
         }
         
         .search-btn {
-            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-            border: none;
+            white-space: nowrap;
+            padding: 4px 4px;
+            background: linear-gradient(135deg, #F8FAFC 0%, #D9EAFD 100%);
             color: white;
-            width: 28px;
-            height: 28px;
-            border-radius: 6px;
-            font-size: 12px;
+            border-radius: 12px;
+            border: none;
             cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            /* ▼ 아이콘 정중앙 정렬 핵심 */
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.2s;
         }
         
         .search-btn:hover {
-            transform: scale(1.05);
+            transform: scale(1.2);
             box-shadow: 0 4px 12px rgba(59,130,246,0.4);
         }
         
@@ -690,13 +659,13 @@
             display: flex;
             gap: 4px;
             align-items: center;
-            background: rgba(255,255,255,0.2);
+            background: rgba(16,185,129,0.1);
             padding: 2px 6px;
             border-radius: 12px;
         }
         
         .nav-btn {
-            background: linear-gradient(135deg, #6b7280, #4b5563);
+            background: linear-gradient(135deg, #3E5879 0%, #1E3A60 100%);
             border: none;
             color: white;
             width: 22px;
@@ -706,11 +675,15 @@
             font-weight: bold;
             cursor: pointer;
             transition: all 0.2s;
+            /* ▼ 아이콘 정중앙 정렬 핵심 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         .nav-btn:hover:not(:disabled) {
-            background: linear-gradient(135deg, #9ca3af, #6b7280);
-            transform: scale(1.1);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transform: scale(1.2);
         }
         
         .nav-btn:disabled {
@@ -1254,23 +1227,30 @@ function searchContent() {
     // ✅ 네비게이션 UI 업데이트
     updateSearchNavigation(matchCount);
     currentSearchIndex = 0;
-    navigateToCurrentMatch();
+    if (matchCount > 0) {
+        navigateToCurrentMatch();
+    }
 }
 
-// ✅ 네비게이션 업데이트
+// ✅ 네비게이션 UI 업데이트 (0개도 표시)
 function updateSearchNavigation(matchCount) {
     const searchCountEl = document.getElementById("searchCount");
     const searchNavEl = document.querySelector(".search-nav");
     const currentPosEl = document.getElementById("currentSearchPos");
+    const searchResultsEl = document.querySelector(".search-results");
+    
+    // ✅ 항상 검색 결과 표시
+    searchCountEl.textContent = `${matchCount}개`;
+    searchCountEl.dataset.count = matchCount; // ✅ 상태 표시
+    searchCountEl.style.display = "inline-block";
     
     if (matchCount > 0) {
-        searchCountEl.textContent = `${matchCount}개`;
-        searchCountEl.style.display = "inline-block";
         searchNavEl.style.display = "flex";
-        currentPosEl.textContent = `1/${matchCount}`;
+        currentPosEl.textContent = `${currentSearchIndex + 1}/${matchCount}`;
+        searchResultsEl.style.display = "flex";
     } else {
-        searchCountEl.style.display = "none";
         searchNavEl.style.display = "none";
+        searchResultsEl.style.display = "flex"; // 결과는 보이되 네비게이션만 숨김
     }
 }
 
