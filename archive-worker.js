@@ -19,16 +19,31 @@ function parseArchive(lines) {
             }
         }
     }
+    // Match the complete VPM XML terminator, not a marker embedded in a policy.
+    const vpmEnd=/^\s*<\/vpmapp>\s*$/i;
+    const xmlEnd=/^\s*end-\d+-inline-xml\s*$/i;
+    const policyEndMarker=/^\s*!-\s*END\s+policy\s*$/i;
+    let policyEnd=-1;
+    if(policyStart>=0){
+        for(let i=policyStart+2;i+2<lines.length;i++){
+            if(vpmEnd.test(lines[i])&&xmlEnd.test(lines[i+1])&&policyEndMarker.test(lines[i+2])){
+                policyEnd=i+3;
+                break;
+            }
+        }
+    }
     const firstStart=exceptionStart>=0?exceptionStart:policyStart>=0?policyStart:lines.length;
     const sections={
         general:{start:0,end:firstStart},
         proxies:exceptionStart>=0&&exceptionEnd>exceptionStart?{start:exceptionStart,end:exceptionEnd}:null,
-        policy:policyStart>=0?{start:policyStart,end:lines.length}:null
+        policy:policyStart>=0?{start:policyStart,end:policyEnd>=0?policyEnd:lines.length}:null,
+        authentication:policyEnd>=0?{start:policyEnd,end:lines.length}:null
     };
     const warnings=[];
     if(exceptionStart<0)warnings.push("Exception Page 시작 문구 없음");
     else if(exceptionEnd<0)warnings.push("!- END authentication 없음: Exception Page 구간 미확정");
     if(policyStart<0)warnings.push("Policy 시작 문구 없음");
+    else if(policyEnd<0)warnings.push("Policy XML 종료 문구 없음: Authentication 구간 미확정");
     return {sections,warnings};
 }
 
@@ -40,7 +55,7 @@ function parseArchive(lines) {
     const send=(type,id,data={},transfer=[])=>self.postMessage({type,id,...data},transfer);
     function lower(a,value){let l=0,r=a.length;while(l<r){const m=l+Math.floor((r-l)/2);if(a[m]<value)l=m+1;else r=m;}return l;}
     function range(a,section){const b=section==="all"?{start:0,end:lines.length}:info.sections[section];return b?[lower(a,b.start),lower(a,b.end)]:[0,0];}
-    function counts(){const result={};for(const section of ["all","general","proxies","policy"]){const k=range(kept,section),r=range(removed,section);result[section]={kept:k[1]-k[0],removed:r[1]-r[0]};}return result;}
+    function counts(){const result={};for(const section of ["all","general","proxies","policy","authentication"]){const k=range(kept,section),r=range(removed,section);result[section]={kept:k[1]-k[0],removed:r[1]-r[0]};}return result;}
     async function filter(m){
         tasks.filter=m.id; tasks.search=0; tasks.preview=0;
         const valid=()=>tasks.filter===m.id;

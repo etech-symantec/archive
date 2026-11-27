@@ -23,7 +23,7 @@
         if(worker)worker.terminate();
         for(const job of exportJobs.values())job.reject(new Error("작업 취소"));
         exportJobs.clear();
-        worker=new Worker("archive-worker.js?v=20261127.03");
+        worker=new Worker("archive-worker.js?v=20261127.04");
         const instance=worker;
         worker.onmessage=e=>{if(worker===instance)receive(e.data);};
         worker.onerror=e=>{if(worker!==instance)return;primary=searchJob=previewJob=0;loaded=false;setNotice("분석 엔진 오류: "+(e.message||"파일을 다시 열어 주세요."));updateTabs();};
