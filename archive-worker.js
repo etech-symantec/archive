@@ -1,26 +1,35 @@
 function parseArchive(lines) {
-    const definitions = [
-        { id: "proxies", heading: /^\s*!-\s*BEGIN\s+proxies\s*$/i, inline: /^\s*inline\s+exceptions\s+(end-\d+-inline)\s*$/i },
-        { id: "policy", heading: /^\s*!-\s*BEGIN\s+policy\s*$/i, inline: /^\s*inline\s+policy\s+local\s+(end-\d+-inline)\s*$/i }
-    ];
-    const starts = definitions.map(def => ({ ...def, start: lines.findIndex(line => def.heading.test(line)) }))
-        .filter(def => def.start >= 0).sort((a,b) => a.start-b.start);
-    const sections = {
-        general: { start: 0, end: starts.length ? starts[0].start : lines.length },
-        proxies: null, policy: null
-    };
-    const warnings = [];
-    for (const def of definitions) {
-        if (!starts.some(item => item.id === def.id)) warnings.push(def.id + " 시작 구간 없음");
+    const proxiesHeading=/^\s*!-\s*BEGIN\s+proxies\s*$/i;
+    const separator=/^\s*!\s*$/;
+    const exceptionsInline=/^\s*inline\s+exceptions\s+("?)(end-\d+-inline)\1\s*$/i;
+    const authenticationEnd=/^\s*!-\s*END\s+authentication\s*$/i;
+    const policyHeading=/^\s*!-\s*BEGIN\s+policy\s*$/i;
+    const policyInline=/^\s*inline\s+policy\s+local\s+("?)(end-\d+-inline)\1\s*$/i;
+    let exceptionStart=-1, exceptionEnd=-1, policyStart=-1;
+    for(let i=0;i<lines.length;i++){
+        if(exceptionStart<0&&proxiesHeading.test(lines[i])&&separator.test(lines[i+1]??"")&&exceptionsInline.test(lines[i+2]??"")){
+            exceptionStart=i;
+        }
+        if(authenticationEnd.test(lines[i])){
+            if(exceptionStart>=0&&i>exceptionStart&&exceptionEnd<0)exceptionEnd=i+1;
+            if(policyHeading.test(lines[i+1]??"")&&policyInline.test(lines[i+2]??"")&&(exceptionStart<0||i>exceptionStart)){
+                policyStart=i+1;
+                if(exceptionStart>=0)exceptionEnd=i+1;
+                break;
+            }
+        }
     }
-    starts.forEach((def, i) => {
-        const end = i+1 < starts.length ? starts[i+1].start : lines.length;
-        sections[def.id] = { start: def.start, end };
-        const declaration = lines.slice(def.start+1,end).find(line => def.inline.test(line));
-        if (!declaration) warnings.push(def.id + " inline 시작 문구 없음");
-    });
-    if(starts.length===2 && starts[0].id!=="proxies") warnings.push("proxies / policy 순서 확인 필요");
-    return { sections, warnings };
+    const firstStart=exceptionStart>=0?exceptionStart:policyStart>=0?policyStart:lines.length;
+    const sections={
+        general:{start:0,end:firstStart},
+        proxies:exceptionStart>=0&&exceptionEnd>exceptionStart?{start:exceptionStart,end:exceptionEnd}:null,
+        policy:policyStart>=0?{start:policyStart,end:lines.length}:null
+    };
+    const warnings=[];
+    if(exceptionStart<0)warnings.push("Exception Page 시작 문구 없음");
+    else if(exceptionEnd<0)warnings.push("!- END authentication 없음: Exception Page 구간 미확정");
+    if(policyStart<0)warnings.push("Policy 시작 문구 없음");
+    return {sections,warnings};
 }
 
 (function workerMain(){
