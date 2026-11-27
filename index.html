@@ -692,13 +692,27 @@
             cursor: not-allowed;
         }
 
+        .archive-tabs { display:flex; flex-wrap:wrap; gap:6px; padding:10px 8px 6px; background:#f0f4f9; border:1px solid #dbe3ef; border-bottom:0; }
+        .archive-tabs[hidden], .archive-status[hidden] { display:none; }
+        .archive-tab { display:inline-flex; align-items:center; gap:7px; padding:8px 12px; border:1px solid #cbd5e1; border-radius:8px; color:#334155; background:#fff; box-shadow:none; font-size:13px; }
+        .archive-tab:hover:not(:disabled) { color:#1e3a5f; background:#e0eaff; transform:none; box-shadow:none; }
+        .archive-tab[aria-selected="true"], .archive-tab[aria-selected="true"]:hover { color:white; background:#1e3a5f; border-color:#1e3a5f; }
+        .archive-tab:disabled { opacity:.45; cursor:not-allowed; box-shadow:none; transform:none; }
+        .archive-tab-count { font-size:11px; font-weight:normal; padding:2px 5px; border-radius:5px; background:rgba(128,128,128,.13); }
+        .archive-status { padding:6px 10px; background:#f8fafc; color:#475569; font-size:12px; overflow-wrap:anywhere; border:1px solid #dbe3ef; border-bottom:0; }
+        .archive-status.warning { color:#92400e; background:#fffbeb; }
+        .archive-empty { padding:35px 15px; text-align:center; color:#64748b; }
+        .archive-upload { padding:4px 8px !important; font-size:12px !important; box-shadow:none; }
+        .archive-toolbar { display:flex; flex-wrap:wrap; gap:6px; align-items:center; justify-content:flex-end; min-width:0; }
+        .right-content .box-title { flex-wrap:wrap; gap:8px; }
+        .right-content { min-width:0; }
     </style>
 </head>
 <body>
 <!-- 공통 헤더 + 제목 + 버전 -->
 <script>
   window.pageTitle = "ProxySG Archive Config 편집기";
-  window.pageVersion = "ver.2025.12.08.01";
+  window.pageVersion = "ver.2026.11.27.01";
 </script> 
 <script src="https://etech-symantec.github.io/header.js"></script>
 
@@ -815,7 +829,9 @@
         <div class="box">
             <div class="box-title">
                 📌 Archive Config 내용
-                <div style="display: flex; gap: 6px; align-items: center;">
+                <div class="archive-toolbar">
+                    <input type="file" id="fileInput" hidden>
+                    <button type="button" class="archive-upload" onclick="document.getElementById('fileInput').click()">파일 열기</button>
                     <input type="text" id="contentSearch" class="content-search-input" placeholder="내용 검색..." onkeydown="handleSearchKey(event)">
                     <button class="search-btn" onclick="searchContent()">🔍</button>
                     <span id="searchCount" class="search-count" style="display:none;">0개</span>
@@ -825,12 +841,19 @@
                         <button class="search-nav-btn" onclick="navigateSearch(1)">⬇</button>
                     </div>
                     <button class="search-to-keyword-btn" onclick="addSearchToKeyword()">➕</button>
-                    <button class="copy-btn-small" id="copyBtn" onclick="copyResult()" style="display:none;">📋</button>
-                    <button class="copy-btn-small" id="downloadBtn" onclick="downloadTxt()" style="display:none;">📥</button>
+                    <button class="copy-btn-small" id="copyBtn" title="선택한 탭의 필터링 결과 복사" onclick="copyResult()" style="display:none;">📋</button>
+                    <button class="copy-btn-small" id="downloadBtn" title="선택한 탭의 필터링 결과 다운로드" onclick="downloadTxt()" style="display:none;">📥</button>
                 </div>
             </div>
 
-            <div id="output" class="output">
+            <div id="archiveTabs" class="archive-tabs" role="tablist" aria-label="Archive Config 구간" hidden>
+                <button type="button" class="archive-tab" id="archive-tab-all" role="tab" aria-controls="output" aria-selected="true" data-section="all">전체 <span class="archive-tab-count"></span></button>
+                <button type="button" class="archive-tab" id="archive-tab-general" role="tab" aria-controls="output" aria-selected="false" data-section="general" tabindex="-1">기본 설정 <span class="archive-tab-count"></span></button>
+                <button type="button" class="archive-tab" id="archive-tab-proxies" role="tab" aria-controls="output" aria-selected="false" data-section="proxies" tabindex="-1">Proxies / Exceptions <span class="archive-tab-count"></span></button>
+                <button type="button" class="archive-tab" id="archive-tab-policy" role="tab" aria-controls="output" aria-selected="false" data-section="policy" tabindex="-1">Policy / Local <span class="archive-tab-count"></span></button>
+            </div>
+            <div id="archiveStatus" class="archive-status" aria-live="polite" hidden></div>
+            <div id="output" class="output" role="tabpanel" aria-labelledby="archive-tab-all">
                 <p id="dragText">👇🏻여기에 편집할 archconf 파일을 올려주세요.</p>
             </div>
         </div>
@@ -849,6 +872,138 @@ let keywords = [];
 let uploadedFileName = "";
 let currentSearchIndex = 0;
 let searchMatches = [];
+let archiveLoaded = false;
+let archiveLines = [];
+let archiveInfo = { sections: {}, warnings: [] };
+let activeArchiveSection = "all";
+let archiveKept = [];
+let archiveRemoved = [];
+let uploadSequence = 0;
+
+function parseArchive(lines) {
+    const definitions = [
+        { id: "proxies", heading: /^\s*!-\s*BEGIN\s+proxies\s*$/i, inline: /^\s*inline\s+exceptions\s+(end-\d+-inline)\s*$/i },
+        { id: "policy", heading: /^\s*!-\s*BEGIN\s+policy\s*$/i, inline: /^\s*inline\s+policy\s+local\s+(end-\d+-inline)\s*$/i }
+    ];
+    const starts = definitions.map(def => ({ ...def, start: lines.findIndex(line => def.heading.test(line)) }))
+        .filter(def => def.start >= 0).sort((a,b) => a.start-b.start);
+    const sections = {
+        general: { start: 0, end: starts.length ? starts[0].start : lines.length },
+        proxies: null, policy: null
+    };
+    const warnings = [];
+    for (const def of definitions) {
+        if (!starts.some(item => item.id === def.id)) warnings.push(def.id + " 시작 구간 없음");
+    }
+    starts.forEach((def, i) => {
+        const end = i+1 < starts.length ? starts[i+1].start : lines.length;
+        sections[def.id] = { start: def.start, end };
+        const declaration = lines.slice(def.start+1,end).find(line => def.inline.test(line));
+        if (!declaration) warnings.push(def.id + " inline 시작 문구 없음");
+    });
+    if(starts.length===2 && starts[0].id!=="proxies") warnings.push("proxies / policy 순서 확인 필요");
+    return { sections, warnings };
+}
+
+function sectionBounds(id) {
+    return id === "all" ? { start:0, end:archiveLines.length } : archiveInfo.sections[id];
+}
+
+function rowsInSection(rows, id) {
+    const bounds = sectionBounds(id);
+    return bounds ? rows.filter(row => row.index >= bounds.start && row.index < bounds.end) : [];
+}
+
+function updateArchiveTabs() {
+    const bar = document.getElementById("archiveTabs");
+    bar.hidden = !archiveLoaded;
+    const counts = { all: archiveKept.length, general: 0, proxies: 0, policy: 0 };
+    archiveKept.forEach(row => {
+        for (const id of ["general","proxies","policy"]) {
+            const range = sectionBounds(id);
+            if (range && row.index >= range.start && row.index < range.end) { counts[id]++; break; }
+        }
+    });
+    bar.querySelectorAll("[data-section]").forEach(button => {
+        const id = button.dataset.section;
+        const range = sectionBounds(id);
+        button.disabled = !range;
+        button.setAttribute("aria-selected", String(id === activeArchiveSection));
+        button.tabIndex = id === activeArchiveSection ? 0 : -1;
+        button.querySelector(".archive-tab-count").textContent = range ? counts[id].toLocaleString() + "줄" : "없음";
+    });
+    const status = document.getElementById("archiveStatus");
+    const bounds = sectionBounds(activeArchiveSection);
+    const rangeText = bounds && bounds.end > bounds.start ? "원본 " + (bounds.start+1).toLocaleString() + "–" + bounds.end.toLocaleString() + "행" : "빈 구간";
+    status.textContent = rangeText + (archiveInfo.warnings.length ? "  ·  " + archiveInfo.warnings.join(" / ") : "");
+    status.classList.toggle("warning", archiveInfo.warnings.length > 0);
+    status.hidden = !archiveLoaded;
+}
+
+function selectArchiveSection(id) {
+    if (!sectionBounds(id)) return;
+    activeArchiveSection = id;
+    renderArchive();
+}
+
+document.getElementById("archiveTabs").addEventListener("click", event => {
+    const button = event.target.closest("[data-section]");
+    if (button && !button.disabled) selectArchiveSection(button.dataset.section);
+});
+document.getElementById("archiveTabs").addEventListener("keydown", event => {
+    if (!["ArrowLeft","ArrowRight","Home","End"].includes(event.key)) return;
+    const buttons = Array.from(event.currentTarget.querySelectorAll("button:not(:disabled)"));
+    if (!buttons.length) return;
+    event.preventDefault();
+    const index = buttons.findIndex(button => button.dataset.section === activeArchiveSection);
+    const next = event.key === "Home" ? 0 : event.key === "End" ? buttons.length-1 :
+        (index + (event.key === "ArrowRight" ? 1 : -1) + buttons.length) % buttons.length;
+    selectArchiveSection(buttons[next].dataset.section);
+    buttons[next].focus();
+});
+
+function renderArchive() {
+    updateArchiveTabs();
+    const output = document.getElementById("output");
+    output.setAttribute("aria-labelledby", "archive-tab-" + activeArchiveSection);
+    const kept = rowsInSection(archiveKept, activeArchiveSection);
+    const removed = rowsInSection(archiveRemoved, activeArchiveSection);
+    function renderRows(target, rows, emptyText) {
+        const fragment = document.createDocumentFragment();
+        for (const row of rows) {
+            const lineDiv = document.createElement("div");
+            lineDiv.className = "code-line";
+            const number = document.createElement("div");
+            number.className = "line-number";
+            number.textContent = row.index + 1;
+            const content = document.createElement("div");
+            content.className = "line-text";
+            content.textContent = row.text;
+            content.dataset.originalText = row.text;
+            lineDiv.append(number, content);
+            fragment.appendChild(lineDiv);
+        }
+        if (!rows.length) {
+            const empty = document.createElement("div");
+            empty.className = "archive-empty";
+            empty.textContent = emptyText;
+            fragment.appendChild(empty);
+        }
+        target.replaceChildren(fragment);
+        target.scrollTop = 0;
+    }
+    renderRows(output, kept, "표시할 내용이 없습니다.");
+    renderRows(document.getElementById("removed"), removed, "삭제된 내용이 없습니다.");
+    document.getElementById("removedCount").textContent = " (" + removed.length.toLocaleString() + "줄)";
+    document.getElementById("copyBtn").disabled = !kept.length;
+    document.getElementById("downloadBtn").disabled = !kept.length;
+    searchMatches = [];
+    currentSearchIndex = 0;
+    document.getElementById("searchCount").style.display = "none";
+    document.querySelector(".search-nav").style.display = "none";
+    if (document.getElementById("contentSearch").value.trim()) searchContent(false);
+    updateRegexPreview();
+}
 
 // 키워드 로딩
 window.onload = function() {
@@ -885,58 +1040,50 @@ const defaultKeywords = ["menlo",
                          "keyring"];
 
 
-// "Archive Config 내용" 박스에 드래그 앤 드롭 기능 추가
-document.getElementById("output").addEventListener("dragover", function(e) {
-    e.preventDefault();
-    e.stopPropagation();
-    this.style.backgroundColor = "#e3f2fd";  // 드래그 중 색상 변경
-});
-
-document.getElementById("output").addEventListener("dragleave", function(e) {
-    e.preventDefault();
-    e.stopPropagation();
-    this.style.backgroundColor = "#fafafa";  // 원래 색상으로 복귀
-});
-
-document.getElementById("output").addEventListener("drop", function(e) {
-    e.preventDefault();
-    e.stopPropagation();
-    this.style.backgroundColor = "#fafafa";  // 드롭 후 색상 복귀
-    const file = e.dataTransfer.files[0];
-    if (file) {
-        uploadedFileName = file.name.replace(/\.[^/.]+$/, "");
-        document.getElementById("copyBtn").style.display = "inline-block"; 
-        document.getElementById("downloadBtn").style.display = "inline-block";
-        
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            fileContent = e.target.result;
-            document.getElementById("dragText").style.display = "none";  // 안내문구 숨기기
-            filterText();  // 파일 읽은 후 필터링 적용
-        };
-        reader.readAsText(file, "UTF-8");
-    }
-});
-
-
-// 파일 입력
-document.getElementById("fileInput").addEventListener("change", function () {
-    const file = this.files[0];
+// 드래그 앤 드롭 / 파일 선택 공통 처리
+function loadArchiveFile(file) {
+    if (!file) return;
+    const sequence = ++uploadSequence;
     const reader = new FileReader();
-
-    reader.onload = function (e) {
-        fileContent = e.target.result;
+    reader.onload = function(e) {
+        if (sequence !== uploadSequence) return;
+        fileContent = String(e.target.result ?? "");
+        uploadedFileName = file.name.replace(/\.[^/.]+$/, "");
+        archiveLoaded = true;
+        archiveLines = fileContent ? fileContent.split(/\r\n|\n|\r/) : [];
+        archiveInfo = parseArchive(archiveLines);
+        activeArchiveSection = "all";
+        document.getElementById("copyBtn").style.display = "inline-block";
+        document.getElementById("downloadBtn").style.display = "inline-block";
+        document.getElementById("contentSearch").value = "";
         filterText();
     };
-
+    reader.onerror = function() {
+        if (sequence === uploadSequence) alert("파일을 읽을 수 없습니다. 다시 선택해 주세요.");
+    };
     reader.readAsText(file, "UTF-8");
-});
+}
 
-/// 엔터로 키워드 추가
-document.getElementById("keywordInput").addEventListener("keyup", function(e) {
-    if (e.key === "Enter") {  // 엔터키를 누르면
-        addKeyword();  // 키워드를 추가하는 함수 호출
-    }
+const archiveOutput = document.getElementById("output");
+archiveOutput.addEventListener("dragover", function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    this.style.backgroundColor = "#e3f2fd";
+});
+archiveOutput.addEventListener("dragleave", function(e) {
+    e.preventDefault();
+    this.style.backgroundColor = "";
+});
+archiveOutput.addEventListener("drop", function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    this.style.backgroundColor = "";
+    loadArchiveFile(e.dataTransfer.files[0]);
+});
+document.getElementById("fileInput").addEventListener("change", function() {
+    const file = this.files[0];
+    this.value = "";
+    loadArchiveFile(file);
 });
 
 // 정규식 도우미 → 입력창에 삽입
@@ -981,18 +1128,19 @@ function updateRegexPreview() {
     
     try {
         const regex = new RegExp(input, ignoreCase ? "i" : "");
-        const lines = fileContent.split(/\r?\n/);
-        const matchedLines = lines.filter(line => regex.test(line));
+        const bounds = sectionBounds(activeArchiveSection);
+        const lines = bounds ? archiveLines.slice(bounds.start, bounds.end) : [];
+        const matchedLines = lines.map((line, idx) => ({line, number: bounds.start + idx + 1})).filter(row => regex.test(row.line));
         
         if (matchedLines.length === 0) {
             previewDiv.innerHTML = '<div style="text-align:center;color:#ef4444;padding:40px;">❌ 매칭되는 줄이 없습니다</div>';
             matchCountDiv.textContent = "";
         } else {
             // ✅ 모든 줄 표시 (10줄 제한 제거!)
-            const previewHTML = matchedLines.map((line, idx) => 
+            const previewHTML = matchedLines.map(row => 
                 `<div class="preview-line">
-                    <span class="preview-number">${idx + 1}</span>
-                    <span class="preview-text">${escapeHtml(line)}</span>
+                    <span class="preview-number">${row.number}</span>
+                    <span class="preview-text">${escapeHtml(row.line)}</span>
                 </div>`
             ).join('');
             
@@ -1057,99 +1205,34 @@ function renderKeywordTags() {
     });
 }
 
-// 필터링 (항상 OR 방식)
+// 원본을 먼저 구간 분리한 후, 전체에 동일한 키워드 필터 적용
 function filterText() {
-    if (!fileContent) return;
-
+    if (!archiveLoaded) return;
     const ignoreCase = document.getElementById("ignoreCase").checked;
-    const useRegex = true; // ✅ 항상 정규식 사용
-
-    const lines = fileContent.split(/\r?\n/);
-
-    let kept = [];
-    let removed = [];
-    let removedLines = [];
-
-    // 키워드 준비
-    const searchKeywords = keywords.map(k => ignoreCase ? k.text.toLowerCase() : k.text);
-
-    lines.forEach((line, index) => {
-        const processedLine = ignoreCase ? line.toLowerCase() : line;
-
-        let matchFound = false;
-
-        if (useRegex) {
-            try {
-                matchFound = searchKeywords.some(k =>
-                    new RegExp(k, ignoreCase ? "i" : "").test(line)
-                );
-            } catch (e) {
-                // 오류 발생 시 사용자에게 명확한 메시지 출력
-                alert("정규식 오류: 유효하지 않은 정규식입니다. 다시 확인해 주세요.");
-                return;  // 오류 발생 시 더 이상 진행되지 않도록 처리
-            }
-        } else {
-            matchFound = searchKeywords.some(k => processedLine.includes(k));
-        }
-
-        // OR 고정 → 하나라도 맞으면 제거
-        if (matchFound) {
-            removed.push(line);
-            removedLines.push(index + 1); // 줄 번호
-        } else {
-            kept.push(line);
-        }
+    let patterns;
+    try {
+        patterns = keywords.map(k => new RegExp(k.text, ignoreCase ? "i" : ""));
+    } catch (error) {
+        alert("정규식 오류: 유효하지 않은 정규식입니다. 다시 확인해 주세요.");
+        // 새 파일에서도 탭과 원본은 표시하되 잘못된 필터는 적용하지 않음
+        patterns = [];
+    }
+    archiveKept = [];
+    archiveRemoved = [];
+    archiveLines.forEach((line, index) => {
+        const row = { index, text: line };
+        (patterns.some(regex => regex.test(line)) ? archiveRemoved : archiveKept).push(row);
     });
+    renderArchive();
+}
 
-    // 남은 줄 표시
-    const outputDiv = document.getElementById("output");
-    outputDiv.innerHTML = "";
-    kept.forEach((line, idx) => {
-        const lineDiv = document.createElement("div");
-        lineDiv.className = "code-line";
-        
-        const numDiv = document.createElement("div");
-        numDiv.className = "line-number";
-        numDiv.textContent = idx + 1;
-        
-        const textDiv = document.createElement("div");
-        textDiv.className = "line-text";
-        textDiv.textContent = line;
-        textDiv.dataset.originalText = line;
-        
-        lineDiv.appendChild(numDiv);
-        lineDiv.appendChild(textDiv);
-        outputDiv.appendChild(lineDiv);
-    });
-
-    // 제거된 줄 표시
-    const removedDiv = document.getElementById("removed");
-    removedDiv.innerHTML = "";
-    removed.forEach((line, idx) => {
-        const lineDiv = document.createElement("div");
-        lineDiv.className = "code-line";
-        
-        const numDiv = document.createElement("div");
-        numDiv.className = "line-number";
-        numDiv.textContent = removedLines[idx];
-        
-        const textDiv = document.createElement("div");
-        textDiv.className = "line-text";
-        textDiv.textContent = line;
-        
-        lineDiv.appendChild(numDiv);
-        lineDiv.appendChild(textDiv);
-        removedDiv.appendChild(lineDiv);
-    });
-    
-    // 제거된 줄 수 표시
-    document.getElementById("removedCount").textContent = ` (${removed.length}줄)`;
+function getActiveArchiveContent() {
+    return rowsInSection(archiveKept, activeArchiveSection).map(row => row.text).join("\n");
 }
 
 // ✅ TXT 다운로드 함수
 function downloadTxt() {
-    const keptLines = document.querySelectorAll("#output .line-text");
-    const content = Array.from(keptLines).map(el => el.textContent).join('\n');
+    const content = getActiveArchiveContent();
     
     if (!content.trim()) {
         alert("다운로드할 내용이 없습니다!");
@@ -1158,9 +1241,8 @@ function downloadTxt() {
     
     // 파일명 생성: original_edited_20251206
     const today = new Date().toISOString().slice(0,10).replace(/-/g, "");
-    const fileName = uploadedFileName ? 
-        `${uploadedFileName}_edited_${today}.txt` : 
-        `archconf_edited_${today}.txt`;
+    const suffix = activeArchiveSection === "all" ? "" : "_" + activeArchiveSection;
+    const fileName = `${uploadedFileName || "archconf"}${suffix}_edited_${today}.txt`;
     
     const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
     const link = document.createElement('a');
@@ -1176,8 +1258,7 @@ function downloadTxt() {
 
 // ✅ 복사 함수도 수정 (더 정확히)
 function copyResult() {
-    const keptLines = document.querySelectorAll("#output .line-text");
-    const content = Array.from(keptLines).map(el => el.textContent).join('\n');
+    const content = getActiveArchiveContent();
     
     if (!content.trim()) {
         alert("복사할 내용이 없습니다!");
@@ -1199,7 +1280,7 @@ function handleSearchKey(event) {
 }
 
 // ✅ 검색 함수 (결과 수 표시 추가)
-function searchContent() {
+function searchContent(scrollToMatch = true) {
     const searchTerm = document.getElementById("contentSearch").value.trim();
     const lineTexts = document.querySelectorAll("#output .line-text");
     let matchCount = 0;
@@ -1226,9 +1307,9 @@ function searchContent() {
     });
     
     // ✅ 네비게이션 UI 업데이트
-    updateSearchNavigation(matchCount);
     currentSearchIndex = 0;
-    if (matchCount > 0) {
+    updateSearchNavigation(matchCount);
+    if (matchCount > 0 && scrollToMatch) {
         navigateToCurrentMatch();
     }
 }
@@ -1238,7 +1319,7 @@ function updateSearchNavigation(matchCount) {
     const searchCountEl = document.getElementById("searchCount");
     const searchNavEl = document.querySelector(".search-nav");
     const currentPosEl = document.getElementById("currentSearchPos");
-    const searchResultsEl = document.querySelector(".search-results");
+
     
     // ✅ 항상 검색 결과 표시
     searchCountEl.textContent = `${matchCount}개`;
@@ -1248,10 +1329,10 @@ function updateSearchNavigation(matchCount) {
     if (matchCount > 0) {
         searchNavEl.style.display = "flex";
         currentPosEl.textContent = `${currentSearchIndex + 1}/${matchCount}`;
-        searchResultsEl.style.display = "flex";
+
     } else {
         searchNavEl.style.display = "none";
-        searchResultsEl.style.display = "flex"; // 결과는 보이되 네비게이션만 숨김
+
     }
 }
 
@@ -1324,7 +1405,7 @@ function addSearchToKeyword() {
 // ✅ 텍스트 하이라이트 함수
 function highlightText(text, term) {
     const regex = new RegExp(`(${escapeRegExp(term)})`, 'gi');
-    return text.replace(regex, '<mark class="content-search-highlight">$1</mark>');
+    return text.split(regex).map((part, index) => index % 2 ? '<mark class="content-search-highlight">' + escapeHtml(part) + '</mark>' : escapeHtml(part)).join('');
 }
 
 // ✅ 정규식 이스케이프
